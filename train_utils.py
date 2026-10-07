@@ -508,7 +508,7 @@ def validation_curriculum_loop(curriculum_type, model, valloader, mask_token_id,
             saving_version += 1
             best_val_loss = val_loss
             torch.save(model.state_dict(), transformer_path)
-        if  epoch in [168, 177, 182, 189, 196, 200, 203]:
+        if  epoch in [89, 97, 101, 103, 109, 116, 121, 130, 152, 168, 177, 182, 189, 196, 200, 203]:
             print(f'saving copy of epoch {epoch} with num_visible {num_visible}')
             torch.save(model.state_dict(), transformer_path.replace('.pt', f'_epoch{epoch}_nvis{num_visible}.pt'))
     print(f'validation: accuracy={val_accuracy}, loss={val_loss}')
