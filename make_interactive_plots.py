@@ -136,6 +136,12 @@ def make_interactive_plot_for_layer(mod_name, k):
         const x = pointsInPiece.map(item => trace.x[item.index]);
         const y = pointsInPiece.map(item => trace.y[item.index]);
 
+        const tooltipStyle = document.createElement('style');
+        tooltipStyle.textContent =
+            '.hoverlayer .hovertext path, .hoverlayer .hovertext rect {' +
+            'fill-opacity:0.5 !important;}';
+        document.head.appendChild(tooltipStyle);
+
         Plotly.restyle(plot, {
             x: [x],
             y: [y],
@@ -184,7 +190,7 @@ models_data.append({
     'name': 'epoch200_nvis3'
 })
 
-for model_data in models_data:
+for model_data in [models_data[0]]:
     model_name = model_data['name']
     print(f'running for model: {model_name}')
 
@@ -242,6 +248,6 @@ for model_data in models_data:
     nott_val_piece_ids = flatten_piece_metadata(nott_val_latent_steps_list, "piece_ids")
     nott_val_step_indices = flatten_piece_metadata(nott_val_latent_steps_list, "step_indices")
 
-    for k in range(8):
+    for k in [0]: #range(0):
         print(f'making interactive plot for model {model_name} - layer {k}')
         make_interactive_plot_for_layer(model_name, k)
