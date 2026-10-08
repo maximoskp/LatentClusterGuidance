@@ -109,72 +109,6 @@ def make_interactive_plot_for_layer(mod_name, k):
     post_script = """
     const plot = document.getElementById('{plot_id}');
     const overlayIndex = __OVERLAY_INDEX__;
-    const stepCount = 80;
-    const sourceTraces = plot.data.slice(0, overlayIndex).map(trace => ({
-        x: Array.from(trace.x),
-        y: Array.from(trace.y),
-        customdata: trace.customdata.map(data => Array.from(data))
-    }));
-
-    const controls = document.createElement('div');
-    controls.style.cssText = [
-        'position:fixed',
-        'top:12px',
-        'right:12px',
-        'z-index:1000',
-        'padding:10px',
-        'background:rgba(255,255,255,0.92)',
-        'border:1px solid #aaa',
-        'border-radius:4px',
-        'max-height:80vh',
-        'overflow-y:auto',
-        'font:12px sans-serif'
-    ].join(';');
-
-    const controlsTitle = document.createElement('div');
-    controlsTitle.textContent = 'Step indices';
-    controlsTitle.style.cssText = 'font-weight:bold;margin-bottom:6px';
-    controls.appendChild(controlsTitle);
-
-    const checkboxGrid = document.createElement('div');
-    checkboxGrid.style.cssText = 'display:grid;grid-template-columns:repeat(8,auto);gap:4px 8px';
-    for (let step = 0; step < stepCount; step++) {
-        const label = document.createElement('label');
-        label.style.cssText = 'display:flex;align-items:center;gap:2px';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = true;
-        checkbox.dataset.step = String(step);
-        checkbox.addEventListener('change', updateVisibleSteps);
-        label.append(checkbox, document.createTextNode(String(step)));
-        checkboxGrid.appendChild(label);
-    }
-    controls.appendChild(checkboxGrid);
-    document.body.appendChild(controls);
-
-    const tooltipStyle = document.createElement('style');
-    tooltipStyle.textContent =
-        '.hoverlayer .hovertext path, .hoverlayer .hovertext rect {' +
-        'fill-opacity:0.5 !important;}';
-    document.head.appendChild(tooltipStyle);
-
-    function updateVisibleSteps() {
-        const selectedSteps = new Set(
-            Array.from(controls.querySelectorAll('input[data-step]:checked'))
-                .map(checkbox => Number(checkbox.dataset.step))
-        );
-        sourceTraces.forEach((trace, traceIndex) => {
-            const visibleIndices = trace.customdata.reduce((indices, data, index) => {
-                if (selectedSteps.has(Number(data[2]))) indices.push(index);
-                return indices;
-            }, []);
-            Plotly.restyle(plot, {
-                x: [visibleIndices.map(index => trace.x[index])],
-                y: [visibleIndices.map(index => trace.y[index])],
-                customdata: [visibleIndices.map(index => trace.customdata[index])]
-            }, [traceIndex]);
-        });
-    }
 
     plot.on('plotly_hover', (event) => {
         const point = event.points[0];
@@ -220,7 +154,6 @@ def make_interactive_plot_for_layer(mod_name, k):
         xaxis_title="Component 1",
         yaxis_title="Component 2",
         hovermode="closest",
-        hoverlabel=dict(bgcolor="rgba(255,255,255,0.5)"),
     )
 
     os.makedirs("html/", exist_ok=True)
