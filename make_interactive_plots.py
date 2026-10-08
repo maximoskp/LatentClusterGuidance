@@ -190,7 +190,7 @@ models_data.append({
     'name': 'epoch200_nvis3'
 })
 
-for model_data in [models_data[0]]:
+for model_data in models_data:
     model_name = model_data['name']
     print(f'running for model: {model_name}')
 
@@ -248,6 +248,6 @@ for model_data in [models_data[0]]:
     nott_val_piece_ids = flatten_piece_metadata(nott_val_latent_steps_list, "piece_ids")
     nott_val_step_indices = flatten_piece_metadata(nott_val_latent_steps_list, "step_indices")
 
-    for k in [0]: #range(0):
+    for k in range(0):
         print(f'making interactive plot for model {model_name} - layer {k}')
         make_interactive_plot_for_layer(model_name, k)
