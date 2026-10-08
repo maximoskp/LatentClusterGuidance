@@ -152,26 +152,28 @@ def make_interactive_plot_for_layer(mod_name, k):
     controls.appendChild(checkboxGrid);
     document.body.appendChild(controls);
 
+    const tooltipStyle = document.createElement('style');
+    tooltipStyle.textContent =
+        '.hoverlayer .hovertext path, .hoverlayer .hovertext rect {' +
+        'fill-opacity:0.5 !important;}';
+    document.head.appendChild(tooltipStyle);
+
     function updateVisibleSteps() {
         const selectedSteps = new Set(
             Array.from(controls.querySelectorAll('input[data-step]:checked'))
                 .map(checkbox => Number(checkbox.dataset.step))
         );
-        const updates = {x: [], y: [], customdata: []};
-        sourceTraces.forEach(trace => {
+        sourceTraces.forEach((trace, traceIndex) => {
             const visibleIndices = trace.customdata.reduce((indices, data, index) => {
                 if (selectedSteps.has(Number(data[2]))) indices.push(index);
                 return indices;
             }, []);
-            updates.x.push(visibleIndices.map(index => trace.x[index]));
-            updates.y.push(visibleIndices.map(index => trace.y[index]));
-            updates.customdata.push(visibleIndices.map(index => trace.customdata[index]));
+            Plotly.restyle(plot, {
+                x: [visibleIndices.map(index => trace.x[index])],
+                y: [visibleIndices.map(index => trace.y[index])],
+                customdata: [visibleIndices.map(index => trace.customdata[index])]
+            }, [traceIndex]);
         });
-        Plotly.restyle(
-            plot,
-            updates,
-            sourceTraces.map((_, index) => index)
-        );
     }
 
     plot.on('plotly_hover', (event) => {
