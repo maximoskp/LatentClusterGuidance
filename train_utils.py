@@ -425,7 +425,8 @@ def validation_curriculum_loop(curriculum_type, model, valloader, mask_token_id,
                     train_loss, train_accuracy, \
                     train_perplexity, train_token_entropy,
                     best_val_loss, saving_version, results_path=None, \
-                    transformer_path=None, tqdm_position=0, save_every_epoch=True):
+                    transformer_path=None, tqdm_position=0, save_every_epoch=True,
+                    epochs_to_save=None):
     device = model.device
     model.eval()
     with torch.no_grad():
@@ -508,9 +509,10 @@ def validation_curriculum_loop(curriculum_type, model, valloader, mask_token_id,
             saving_version += 1
             best_val_loss = val_loss
             torch.save(model.state_dict(), transformer_path)
-        if  epoch in [89, 97, 101, 103, 109, 116, 121, 130, 152, 168, 177, 182, 189, 196, 200, 203]:
-            print(f'saving copy of epoch {epoch} with num_visible {num_visible}')
-            torch.save(model.state_dict(), transformer_path.replace('.pt', f'_epoch{epoch}_nvis{num_visible}.pt'))
+        if epochs_to_save is not None:
+            if  epoch in epochs_to_save:
+                print(f'saving copy of epoch {epoch} with num_visible {num_visible}')
+                torch.save(model.state_dict(), transformer_path.replace('.pt', f'_epoch{epoch}_nvis{num_visible}.pt'))
     print(f'validation: accuracy={val_accuracy}, loss={val_loss}')
     print('results_path: ', results_path)
     if results_path is not None:
@@ -536,7 +538,8 @@ def train_with_curriculum(
     bar_token_id=None,
     validations_per_epoch=1,
     tqdm_position=0,
-    save_every_epoch=True
+    save_every_epoch=True,
+    epochs_to_save=None
 ):
     # device = next(model.parameters()).device
     device = model.device
@@ -667,7 +670,8 @@ def train_with_curriculum(
                         results_path=results_path,
                         transformer_path=transformer_path,
                         tqdm_position=tqdm_position,
-                        save_every_epoch=save_every_epoch
+                        save_every_epoch=save_every_epoch,
+                        epochs_to_save=epochs_to_save
                     )
             # end for batch
         # end with tqdm
