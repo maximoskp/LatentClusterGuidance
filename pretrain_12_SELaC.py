@@ -16,7 +16,7 @@ load_dotenv()
 suffix_prefix = 'SELaC'
 
 batchsize = 128
-device_name = 'cuda:0'
+device_name = 'cuda:2'
 lr = 1e-4
 epochs = 30
 
@@ -99,12 +99,12 @@ def main():
 
     # save results
     os.makedirs('results', exist_ok=True)
-    os.makedirs(f'results/pretraining_{suffix_prefix}/', exist_ok=True)
-    results_path = f'results/pretraining_{suffix_prefix}/pretraining.csv'
+    os.makedirs(f'results/pretraining_12_{suffix_prefix}/', exist_ok=True)
+    results_path = f'results/pretraining_12_{suffix_prefix}/pretraining.csv'
 
     os.makedirs('saved_models/', exist_ok=True)
-    os.makedirs(f'saved_models/{suffix_prefix}_pretrained/', exist_ok=True)
-    save_dir = f'saved_models/{suffix_prefix}_pretrained/'
+    os.makedirs(f'saved_models/{suffix_prefix}_pretrained_12/', exist_ok=True)
+    save_dir = f'saved_models/{suffix_prefix}_pretrained_12/'
     transformer_path = save_dir + 'pretrained.pt'
 
     train_with_curriculum(
