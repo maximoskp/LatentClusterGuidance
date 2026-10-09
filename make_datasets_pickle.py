@@ -31,4 +31,5 @@ tokenizer = CSGridMLMTokenizer(
 )
 
 for folder in folders_12:
+    print(f'running for folder: {folder}')
     _ = CSGridMLMDataset(folder, tokenizer, frontloading=True, name_suffix='Q4_L80_bar_PC')
