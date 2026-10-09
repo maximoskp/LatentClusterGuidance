@@ -62,20 +62,34 @@ for in_folder, out_folder in zip(folders_CA, folders_12):
             except Exception as e:
                 print(f"❌ Error loading {input_path}: {e}")
                 continue  # Skip to the next file
-
+            # Ensure output directory exists
+            output_root.mkdir(parents=True, exist_ok=True)
+            
+            midi_extensions = {".mid", ".midi"}
+            musicxml_extensions = {".xml", ".mxl", ".musicxml"}
+            extension = input_path.suffix.lower()
+            if extension in midi_extensions:
+                output_ext = '.mid'
+                write_type = 'midi'
+            elif extension in musicxml_extensions:
+                output_ext = '.xml'
+                write_type = 'xml'
+            else:
+                print('ERROR: unknown extension')
+            
             # Process transpositions
             for interval in transposition_intervals:
                 try:
                     # Transpose and create output path
                     transposed_score = score.transpose(interval)
                     output_file = output_root / rel_path.with_stem(f"{input_path.stem}_tr_{interval}")
-                    output_file = output_file.with_suffix(".mid")
+                    output_file = output_file.with_suffix(output_ext)
                     
                     # Create necessary subdirectories
                     output_file.parent.mkdir(parents=True, exist_ok=True)
                     
                     # Write to file
-                    transposed_score.write("midi", output_file)
+                    transposed_score.write(write_type, output_file)
                     pbar.update(1)  # Update progress bar
                     
                 except Exception as e:
