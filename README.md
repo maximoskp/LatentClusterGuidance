@@ -3,9 +3,9 @@ A method for guiding transformers layer-by-layer, step-by-step using latent clus
 
 You can see the result using the links below. These plots present latent representation of each token in each layer as points. Lines connecting points indicate which points (chord tokens) belong to the same piece.
 
-## Model trained only on Cmajor - Aminor
+## Fully masked harmony input
 
-### Fully masked harmony input
+### Model trained on all C major - A minor
 
 Model epoch89_nvis0
 
@@ -51,7 +51,7 @@ Model epoch200_nvis3
 [Interactive UMAP for layer 6](https://maximoskp.github.io/LatentClusterGuidance/html/mask/epoch200_nvis3/umap_6.html)
 [Interactive UMAP for layer 7](https://maximoskp.github.io/LatentClusterGuidance/html/mask/epoch200_nvis3/umap_7.html)
 
-## Model trained on all 12 tonalities
+### Model trained on all 12 tonalities
 
 Model epoch7_nvis0
 
@@ -97,7 +97,9 @@ Model epoch20_nvis0
 [Interactive UMAP for layer 6](https://maximoskp.github.io/LatentClusterGuidance/html/model_12_mask/epoch20_nvis0/umap_6.html)
 [Interactive UMAP for layer 7](https://maximoskp.github.io/LatentClusterGuidance/html/model_12_mask/epoch20_nvis0/umap_7.html)
 
-### Fully unmasked harmony input
+## Fully unmasked harmony input
+
+### Model trained on all C major - A minor
 
 Model epoch89_nvis0
 
@@ -143,7 +145,7 @@ Model epoch200_nvis3
 [Interactive UMAP for layer 6](https://maximoskp.github.io/LatentClusterGuidance/html/epoch200_nvis3/umap_6.html)
 [Interactive UMAP for layer 7](https://maximoskp.github.io/LatentClusterGuidance/html/epoch200_nvis3/umap_7.html)
 
-## Model trained on all 12 tonalities
+### Model trained on all 12 tonalities
 
 Model epoch7_nvis0
 
