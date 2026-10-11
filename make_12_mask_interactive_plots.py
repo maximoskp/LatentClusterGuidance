@@ -180,11 +180,11 @@ models_data.append({
 })
 models_data.append({
     'path': 'saved_models/SELaC_pretrained_12/pretrained_epoch10_nvis10.pt',
-    'name': 'epoch14_nvis10'
+    'name': 'epoch10_nvis10'
 })
 models_data.append({
     'path': 'saved_models/SELaC_pretrained_12/pretrained_epoch14_nvis79.pt',
-    'name': 'epoch10_nvis79'
+    'name': 'epoch14_nvis79'
 })
 models_data.append({
     'path': 'saved_models/SELaC_pretrained_12/pretrained_epoch29_nvis0.pt',
