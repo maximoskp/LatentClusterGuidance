@@ -5,7 +5,8 @@ from music21 import harmony, stream, metadata, chord, note, key, meter, tempo, d
 import mir_eval
 import numpy as np
 from copy import deepcopy
-from models import SELaCModel, SEASModel
+# from models import SELaCModel, SEASModel
+from models_style_steering import SELaCModel, SEASModel
 import os
 from music_utils import transpose_score
 
