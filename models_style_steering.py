@@ -353,6 +353,8 @@ def collect_harmony_layer_states(
     device = device or next(model.parameters()).device
 
     all_states = {i: [] for i in range(len(model.encoder_layers))}
+    all_harmony_ids = []
+    all_valid_positions = []
     for batch in dataloader:
         harmony_ids = batch["harmony_ids"]
         # introduce masked input to the model
@@ -369,65 +371,262 @@ def collect_harmony_layer_states(
         )
         for layer_idx, state in states.items():
             all_states[layer_idx].append(state.detach().cpu())
-    return {i: torch.cat(chunks, dim=0) for i, chunks in all_states.items() if chunks}
+        all_harmony_ids.append( batch["harmony_ids"] )
+        valid = (harmony_ids != bar_token_id) & (harmony_ids != mask_token_id)
+        all_valid_positions.append(valid)
+    return {i: torch.cat(chunks, dim=0) for i, chunks in all_states.items() if chunks}, torch.cat(all_harmony_ids), torch.cat(all_valid_positions)
 # end collect_harmony_layer_states
 
 @torch.no_grad()
 def tokenwise_knn_accuracy(
-    query_states, reference_states, reference_labels, query_labels,
-    k=5, valid_positions=None, metric="cosine"
+    query_states,
+    reference_states,
+    reference_labels,
+    query_labels,
+    k=5,
+    query_valid=None,
+    reference_valid=None,
+    metric="cosine",
 ):
-    """Evaluate per-token style classification, matching the same grid position.
+    """Evaluate per-token style classification at matching grid positions.
 
-    query_states/reference_states: {layer: Tensor(N, G, D)}.
-    Labels are 1-D tensors/lists, e.g. 0=Nottingham, 1=Jazz.
-    Returns {layer: dict with overall token accuracy, per-position accuracy,
-    and per-piece accuracy}. Reference states must come from training data only.
+    Args:
+        query_states: {layer: Tensor(N_query, G, D)}.
+        reference_states: {layer: Tensor(N_reference, G, D)}.
+        reference_labels: Labels for reference pieces, shape (N_reference,).
+        query_labels: Labels for query pieces, shape (N_query,).
+        k: Number of nearest valid reference tokens to consider.
+        query_valid: Optional bool Tensor(N_query, G). True means evaluate
+            that query token.
+        reference_valid: Optional bool Tensor(N_reference, G). True means
+            that reference token may be used as a neighbour.
+        metric: "cosine" or "euclidean".
+
+    Returns:
+        Dictionary keyed by layer, containing:
+            token_accuracy: Accuracy over all evaluated query tokens.
+            position_accuracy: List of accuracies by grid position. Invalid
+                positions (with no evaluable queries/references) are NaN.
+            position_counts: Number of evaluated query tokens per position.
+            piece_accuracy: Accuracy per query piece; NaN for pieces with
+                no evaluable tokens.
+            piece_counts: Number of evaluated tokens per query piece.
+
+    Notes:
+        Reference states should come from training pieces only.
+        Matching is performed only between tokens at the same grid position.
     """
     if k < 1:
         raise ValueError("k must be >= 1")
-    ref_labels = torch.as_tensor(reference_labels, dtype=torch.long)
-    qry_labels = torch.as_tensor(query_labels, dtype=torch.long)
+
+    if metric not in {"cosine", "euclidean"}:
+        raise ValueError("metric must be 'cosine' or 'euclidean'")
+
+    # Use CPU tensors for evaluation.
+    ref_labels = torch.as_tensor(reference_labels, dtype=torch.long).cpu()
+    qry_labels = torch.as_tensor(query_labels, dtype=torch.long).cpu()
+
+    if ref_labels.ndim != 1 or qry_labels.ndim != 1:
+        raise ValueError("reference_labels and query_labels must be 1-D")
+
+    # Infer dimensions from the first layer.
+    if not query_states:
+        return {}
+
+    first_layer = next(iter(query_states))
+    n_query, grid, _ = query_states[first_layer].shape
+    n_reference = reference_states[first_layer].shape[0]
+
+    if len(qry_labels) != n_query:
+        raise ValueError("query_labels length does not match query states")
+    if len(ref_labels) != n_reference:
+        raise ValueError("reference_labels length does not match reference states")
+
+    def prepare_valid(mask, n_pieces, name):
+        if mask is None:
+            return torch.ones((n_pieces, grid), dtype=torch.bool)
+
+        mask = torch.as_tensor(mask, dtype=torch.bool).cpu()
+        if mask.shape != (n_pieces, grid):
+            raise ValueError(
+                f"{name} must have shape {(n_pieces, grid)}, "
+                f"got {tuple(mask.shape)}"
+            )
+        return mask
+
+    q_valid = prepare_valid(query_valid, n_query, "query_valid")
+    r_valid = prepare_valid(reference_valid, n_reference, "reference_valid")
+
+    # A stable label-to-index mapping avoids assumptions that labels are
+    # contiguous non-negative integers.
+    classes = torch.unique(torch.cat([ref_labels, qry_labels])).sort().values
+    n_classes = len(classes)
+
+    # Map original labels to indices in [0, n_classes).
+    ref_class_idx = torch.searchsorted(classes, ref_labels)
+    qry_class_idx = torch.searchsorted(classes, qry_labels)
+
     results = {}
+
     for layer_idx, q_all in query_states.items():
-        r_all = reference_states[layer_idx].cpu()
-        q_all = q_all.cpu()
-        n_q, grid, dim = q_all.shape
-        positions = (torch.ones(grid, dtype=torch.bool) if valid_positions is None
-                     else torch.as_tensor(valid_positions, dtype=torch.bool))
-        position_acc, correct_total, count_total = [], 0, 0
-        piece_correct = torch.zeros(n_q, dtype=torch.float32)
-        piece_count = 0
+        if layer_idx not in reference_states:
+            raise KeyError(f"Missing reference states for layer {layer_idx}")
+
+        q_all = q_all.detach().cpu()
+        r_all = reference_states[layer_idx].detach().cpu()
+
+        if q_all.ndim != 3 or r_all.ndim != 3:
+            raise ValueError("All state tensors must have shape (N, G, D)")
+        if q_all.shape[1:] != r_all.shape[1:]:
+            raise ValueError(
+                f"Query/reference grid or feature dimensions differ "
+                f"at layer {layer_idx}"
+            )
+        if q_all.shape[0] != n_query or r_all.shape[0] != n_reference:
+            raise ValueError(f"Piece counts differ at layer {layer_idx}")
+
+        piece_correct = torch.zeros(n_query, dtype=torch.long)
+        piece_count = torch.zeros(n_query, dtype=torch.long)
+
+        position_accuracy = []
+        position_counts = []
+
+        correct_total = 0
+        count_total = 0
+
         for p in range(grid):
-            if not positions[p]:
+            # Validity is piece-specific: query and reference masks differ.
+            q_idx = torch.where(q_valid[:, p])[0]
+            r_idx = torch.where(r_valid[:, p])[0]
+
+            n_valid_q = len(q_idx)
+            n_valid_r = len(r_idx)
+
+            # No query tokens to evaluate at this position.
+            if n_valid_q == 0:
+                position_accuracy.append(float("nan"))
+                position_counts.append(0)
                 continue
-            q = q_all[:, p, :]
-            r = r_all[:, p, :]
+
+            # Cannot classify without any reference token at this position.
+            if n_valid_r == 0:
+                position_accuracy.append(float("nan"))
+                position_counts.append(0)
+                continue
+
+            q = q_all[q_idx, p, :]
+            r = r_all[r_idx, p, :]
+
             if metric == "cosine":
                 q = F.normalize(q, dim=-1)
                 r = F.normalize(r, dim=-1)
                 distances = 1.0 - q @ r.T
-            elif metric == "euclidean":
-                distances = torch.cdist(q, r)
             else:
-                raise ValueError("metric must be 'cosine' or 'euclidean'")
-            nn_idx = distances.topk(min(k, r.shape[0]), largest=False, dim=1).indices
-            nn_labels = ref_labels[nn_idx]
-            # Majority vote; ties resolve to the lower label.
-            votes = F.one_hot(nn_labels, num_classes=int(max(ref_labels.max(), qry_labels.max()).item()) + 1).sum(dim=1)
-            pred = votes.argmax(dim=-1)
-            correct = pred.eq(qry_labels)
-            correct_total += int(correct.sum())
-            count_total += n_q
-            piece_correct += correct.float()
-            piece_count += 1
-            position_acc.append(float(correct.float().mean()))
+                distances = torch.cdist(q, r, p=2)
+
+            k_eff = min(k, n_valid_r)
+            nn_idx = distances.topk(
+                k_eff, largest=False, dim=1
+            ).indices
+
+            # Neighbour indices are local to the filtered reference set.
+            nn_labels = ref_class_idx[r_idx][nn_idx]
+
+            # Majority vote; ties resolve to the lowest class label.
+            votes = F.one_hot(
+                nn_labels, num_classes=n_classes
+            ).sum(dim=1)
+            pred_class_idx = votes.argmax(dim=-1)
+
+            correct = pred_class_idx.eq(qry_class_idx[q_idx])
+
+            # Aggregate only over valid query tokens.
+            n_correct = int(correct.sum())
+            correct_total += n_correct
+            count_total += n_valid_q
+
+            piece_correct[q_idx] += correct.long()
+            piece_count[q_idx] += 1
+
+            position_accuracy.append(float(correct.float().mean()))
+            position_counts.append(n_valid_q)
+
+        piece_accuracy = torch.full((n_query,), float("nan"))
+        has_valid_tokens = piece_count > 0
+        piece_accuracy[has_valid_tokens] = (
+            piece_correct[has_valid_tokens].float()
+            / piece_count[has_valid_tokens].float()
+        )
+
         results[layer_idx] = {
-            "token_accuracy": correct_total / max(count_total, 1),
-            "position_accuracy": position_acc,
-            "piece_accuracy": (piece_correct / max(piece_count, 1)).tolist(),
+            "token_accuracy": correct_total / count_total
+                if count_total > 0 else float("nan"),
+            "position_accuracy": position_accuracy,
+            "position_counts": position_counts,
+            "piece_accuracy": piece_accuracy.tolist(),
+            "piece_counts": piece_count.tolist(),
         }
+
     return results
+
+# end tokenwise_knn_accuracy
+
+# def tokenwise_knn_accuracy(
+#     query_states, reference_states, reference_labels, query_labels,
+#     k=5, query_valid=None, reference_valid=None, metric="cosine"
+# ):
+#     """Evaluate per-token style classification, matching the same grid position.
+
+#     query_states/reference_states: {layer: Tensor(N, G, D)}.
+#     Labels are 1-D tensors/lists, e.g. 0=Nottingham, 1=Jazz.
+#     Returns {layer: dict with overall token accuracy, per-position accuracy,
+#     and per-piece accuracy}. Reference states must come from training data only.
+#     """
+#     if k < 1:
+#         raise ValueError("k must be >= 1")
+#     ref_labels = torch.as_tensor(reference_labels, dtype=torch.long)
+#     qry_labels = torch.as_tensor(query_labels, dtype=torch.long)
+#     results = {}
+#     for layer_idx, q_all in query_states.items():
+#         r_all = reference_states[layer_idx].cpu()
+#         q_all = q_all.cpu()
+#         n_q, grid, dim = q_all.shape
+#         positions = (torch.ones(grid, dtype=torch.bool) if valid_positions is None
+#                      else torch.as_tensor(valid_positions, dtype=torch.bool))
+#         position_acc, correct_total, count_total = [], 0, 0
+#         piece_correct = torch.zeros(n_q, dtype=torch.float32)
+#         piece_count = 0
+#         for p in range(grid):
+#             if not positions[p]:
+#                 continue
+#             q = q_all[:, p, :]
+#             r = r_all[:, p, :]
+#             if metric == "cosine":
+#                 q = F.normalize(q, dim=-1)
+#                 r = F.normalize(r, dim=-1)
+#                 distances = 1.0 - q @ r.T
+#             elif metric == "euclidean":
+#                 distances = torch.cdist(q, r)
+#             else:
+#                 raise ValueError("metric must be 'cosine' or 'euclidean'")
+#             nn_idx = distances.topk(min(k, r.shape[0]), largest=False, dim=1).indices
+#             nn_labels = ref_labels[nn_idx]
+#             # Majority vote; ties resolve to the lower label.
+#             votes = F.one_hot(nn_labels, num_classes=int(max(ref_labels.max(), qry_labels.max()).item()) + 1).sum(dim=1)
+#             pred = votes.argmax(dim=-1)
+#             correct = pred.eq(qry_labels)
+#             correct_total += int(correct.sum())
+#             count_total += n_q
+#             piece_correct += correct.float()
+#             piece_count += 1
+#             position_acc.append(float(correct.float().mean()))
+#         results[layer_idx] = {
+#             "token_accuracy": correct_total / max(count_total, 1),
+#             "position_accuracy": position_acc,
+#             "piece_accuracy": (piece_correct / max(piece_count, 1)).tolist(),
+#         }
+#     return results
+# # end tokenwise_knn_accuracy
 
 
 @torch.no_grad()
