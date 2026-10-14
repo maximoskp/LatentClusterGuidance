@@ -247,8 +247,10 @@ def load_SEASModel(
 def nucleus_token_by_token_generate(
         model,
         melody_grid,            # (1, seq_len, input_dim)
-        guidance_vector,        # (1, guidance_dim) or None
-        mask_token_id,          # token ID used for masking
+        mask_token_id,        # token ID used for masking
+        style_banks=None,
+        steering_strengths=None,
+        steer_mask=None,
         temperature=1.0,        # optional softmax temperature
         pad_token_id=None,      # token ID for <pad>
         nc_token_id=None,       # token ID for <nc>
@@ -277,14 +279,16 @@ def nucleus_token_by_token_generate(
         last_active_index = -1
 
     step = 0
-    guidance_embedding=guidance_vector.to(model.device) if guidance_vector is not None else None
     
     while (visible_harmony == mask_token_id).any():
         with torch.no_grad():
-            logits = model(
+            logits, layers_output, pre_output = model(
                 melody_grid=melody_grid.to(model.device),
                 harmony_tokens=visible_harmony.to(model.device),
-                z_g=guidance_embedding,
+                style_banks=style_banks,
+                steering_strengths=steering_strengths,
+                steer_mask=steer_mask,
+                get_layers_output=True,
             )  # (1, seq_len, vocab_size)
         # --- Masked position selection ---
         masked_positions = (visible_harmony == mask_token_id).squeeze(0).nonzero(as_tuple=True)[0]
@@ -343,7 +347,11 @@ def nucleus_token_by_token_generate(
         visible_harmony[0, pos] = token
         step += 1
     
-    return visible_harmony
+    return {
+        'harmony_ids': visible_harmony,
+        'layers_output': layers_output,
+        'pre_output': pre_output
+    }
 # end nucleus_token_by_token_generate
 
 def generate_files_with_nucleus(
@@ -353,7 +361,9 @@ def generate_files_with_nucleus(
         mxl_folder_out,
         midi_folder_out,
         name_suffix,
-        guidance_vec = None,
+        style_banks=None,
+        steering_strengths=None,
+        steer_mask=None,
         use_constraints=False,
         intertwine_bar_info=True,
         normalize_tonality=True,
@@ -386,12 +396,15 @@ def generate_files_with_nucleus(
         harmony_input[ harmony_input != tokenizer.bar_token_id ] = tokenizer.mask_token_id
     melody_grid = torch.FloatTensor( input_encoded['pianoroll'] ).reshape( 1, input_encoded['pianoroll'].shape[0], input_encoded['pianoroll'].shape[1] )
     
-    hidden = None
+    layers_output = None
+    pre_output = None
     if create_gen:
-        nucleus_generated_harmony = nucleus_token_by_token_generate(
+        harmony_and_hidden = nucleus_token_by_token_generate(
             model=model,
             melody_grid=melody_grid.to(model.device),
-            guidance_vector=guidance_vec,
+            style_banks=style_banks,
+            steering_strengths=steering_strengths,
+            steer_mask=steer_mask,
             mask_token_id=tokenizer.mask_token_id,
             temperature=temperature,
             pad_token_id=pad_token_id,      # token ID for <pad>
@@ -401,6 +414,9 @@ def generate_files_with_nucleus(
             p=p,
             unmasking_order=unmasking_order
         )
+        nucleus_generated_harmony = harmony_and_hidden['harmony_ids']
+        layers_output = harmony_and_hidden['layers_output']
+        pre_output = harmony_and_hidden['pre_output']
         gen_output_tokens = []
         for t in nucleus_generated_harmony[0].tolist():
             gen_output_tokens.append( tokenizer.ids_to_tokens[t] )
@@ -413,7 +429,6 @@ def generate_files_with_nucleus(
         harmony_real_tokens.append( tokenizer.ids_to_tokens[t] )
     gen_score = None
     real_score = None
-    guide_score = None
     if create_gen:
         gen_score = overlay_generated_harmony(
             input_encoded['melody_part'],
@@ -458,8 +473,8 @@ def generate_files_with_nucleus(
         'harmony_real_tokens': harmony_real_tokens,
         'gen_score': gen_score,
         'real_score': real_score,
-        'guide_score': guide_score,
-        'hidden': hidden
+        'layers_output': layers_output,
+        'pre_output': pre_output
     }
 # end generate_files_with_nucleus
 

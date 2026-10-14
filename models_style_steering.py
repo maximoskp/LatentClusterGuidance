@@ -191,8 +191,8 @@ class SELaCModel(nn.Module):
         if get_layers_output and style_banks:
             return harmony_output, layers_output, pre_intervention_output
         elif get_layers_output:
-            return harmony_output, layers_output
-        return harmony_output
+            return harmony_output, layers_output, None
+        return harmony_output, None, None
     # end forward
 
     # optionally add helpers to extract attention maps across layers:
@@ -364,7 +364,7 @@ def collect_harmony_layer_states(
             0,
             bar_token_id=bar_token_id
         )
-        _, states = model(
+        _, states, _ = model(
             batch["pianoroll"].to(device),
             harmony_tokens=harmony_input.to(device),
             get_layers_output=True
