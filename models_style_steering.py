@@ -43,7 +43,7 @@ class TransformerEncoderLayerWithAttn(TransformerEncoderLayer):
         return src
 # end TransformerEncoderLayerWithAttn
 
-# ========== Latent Clusters Model ==========
+# ========== Nearest-Neighbor Activation Steering Model ==========
 class SELaCModel(nn.Module):
     def __init__(
             self, 
@@ -107,19 +107,31 @@ class SELaCModel(nn.Module):
             steering_strengths=None,
             steer_mask=None
         ):
-        """
-        melody_grid: (B, grid_length, pianoroll_dim)
-        harmony_tokens: (B, grid_length), e.g. all-mask tokens except bar tokens.
+        """Run the model, optionally steering harmony-side hidden states.
 
-        style_banks: optional dict {layer_index: bank}, where bank has shape
-            (N_style_examples, grid_length, d_model). Each bank contains harmony-side
-            hidden states from target-style training examples using the same model/input setup.
-        steering_strengths: float or dict {layer_index: float}, in [0, 1].
-            0 leaves a layer unchanged; 1 replaces each eligible vector with its
-            nearest target-style vector at the same grid position.
-        steer_mask: optional bool tensor of shape (grid_length,). True means steer
-            this position; use False for bar/control tokens if desired.
-        get_layers_output: return harmony-side states after steering at each layer.
+        Args:
+            melody_grid: Tensor (B, grid_length, pianoroll_dim).
+            harmony_tokens: Tensor (B, grid_length), e.g. mask tokens except bar tokens.
+            style_banks: Optional dict {layer_index: bank}. The bank rank selects
+                the retrieval strategy:
+                  * (N_pieces, grid_length, d_model): position-constrained NN;
+                    each query position searches only references at that position.
+                  * (N_reference_states, d_model): position-independent NN; each
+                    query position searches every reference state in the flattened bank.
+                  * (d_model,): global-vector steering; every query position is
+                    steered toward this single vector (no nearest-neighbour search).
+                Banks should contain states extracted from target-style training examples
+                using the same model and input/masking setup.
+            steering_strengths: Float or dict {layer_index: float} in [0, 1].
+                0 leaves a layer unchanged; 1 fully replaces eligible states with targets.
+            steer_mask: Optional bool Tensor (grid_length,); True means steer that position.
+                Useful for excluding bar/control tokens.
+            get_layers_output: If True, also return post-intervention states by layer and
+                pre-intervention states (third return value; None if no style banks supplied).
+
+        Returns:
+            Without get_layers_output: (harmony_logits, None, None).
+            With get_layers_output: (harmony_logits, post_states, pre_states).
         """
         B = melody_grid.size(0)
         device = melody_grid.device
@@ -128,8 +140,7 @@ class SELaCModel(nn.Module):
         if harmony_tokens is not None:
             harmony_emb = self.harmony_embedding(harmony_tokens)
         else:
-            # Legacy behavior. For style experiments, pass explicit mask-token IDs
-            # rather than relying on this zero-vector placeholder.
+            # For style experiments, explicit mask-token IDs are recommended.
             harmony_emb = torch.zeros(
                 B, self.grid_length, self.d_model,
                 device=device, dtype=melody_emb.dtype
@@ -141,57 +152,96 @@ class SELaCModel(nn.Module):
         full_seq = self.dropout(full_seq)
 
         layers_output = {} if get_layers_output else None
-        pre_intervention_output = {} if get_layers_output and style_banks else None
+        has_banks = style_banks is not None and len(style_banks) > 0
+        pre_intervention_output = {} if get_layers_output and has_banks else None
         encoded = full_seq
         harmony_slice = slice(-self.grid_length, None)
 
         for i, layer in enumerate(self.encoder_layers):
             encoded = layer(encoded)
             harmony_hidden = encoded[:, harmony_slice, :]
+            harmony_hidden_post = harmony_hidden
 
-            # Nearest-neighbour target-style steering, applied after this layer and
-            # before the next layer. Match each position only against that position
-            # in the target-style bank, preserving grid alignment.
             if style_banks is not None and i in style_banks:
-                bank = style_banks[i].to(device=device, dtype=encoded.dtype)
-                if bank.dim() != 3 or bank.shape[1:] != (self.grid_length, self.d_model):
+                bank = torch.as_tensor(
+                    style_banks[i], device=device, dtype=encoded.dtype
+                )
+                q = harmony_hidden
+                if bank.ndim == 3:
+                    # Position-constrained retrieval: bank (N, G, D), query (B, G, D).
+                    if bank.shape[1:] != (self.grid_length, self.d_model):
+                        raise ValueError(
+                            f"3D style_banks[{i}] must have shape "
+                            f"(N, {self.grid_length}, {self.d_model}); got {tuple(bank.shape)}"
+                        )
+                    q_norm = F.normalize(q, p=2, dim=-1)
+                    bank_norm = F.normalize(bank, p=2, dim=-1)
+                    # Similarity (B, G, N): each position searches its matching position.
+                    similarities = torch.einsum("bgd,ngd->bgn", q_norm, bank_norm)
+                    nearest_idx = similarities.argmax(dim=-1)  # (B, G)
+                    pos = torch.arange(self.grid_length, device=device)[None, :]
+                    targets = bank[nearest_idx, pos]           # (B, G, D)
+                elif bank.ndim == 2:
+                    # Position-independent retrieval: each query state searches all rows.
+                    if bank.shape[-1] != self.d_model or bank.shape[0] < 1:
+                        raise ValueError(
+                            f"2D style_banks[{i}] must have shape (N_reference_states, "
+                            f"{self.d_model}) with N_reference_states >= 1; got {tuple(bank.shape)}"
+                        )
+                    q_flat = q.reshape(-1, self.d_model)
+                    q_norm = F.normalize(q_flat, p=2, dim=-1)
+                    bank_norm = F.normalize(bank, p=2, dim=-1)
+                    similarities = q_norm @ bank_norm.transpose(0, 1)  # (B*G, N_ref)
+                    nearest_idx = similarities.argmax(dim=-1)
+                    targets = bank[nearest_idx].reshape(B, self.grid_length, self.d_model)
+                elif bank.ndim == 1:
+                    # Global-vector steering: same target vector for every position.
+                    if bank.shape[0] != self.d_model:
+                        raise ValueError(
+                            f"1D style_banks[{i}] must have shape ({self.d_model},); "
+                            f"got {tuple(bank.shape)}"
+                        )
+                    targets = bank.view(1, 1, self.d_model).expand(B, self.grid_length, -1)
+                else:
                     raise ValueError(
-                        f"style_banks[{i}] must have shape (N, {self.grid_length}, {self.d_model}); "
-                        f"got {tuple(bank.shape)}"
+                        f"style_banks[{i}] must be 1D, 2D, or 3D; got shape {tuple(bank.shape)}"
                     )
-                q = F.normalize(harmony_hidden, p=2, dim=-1)
-                keys = F.normalize(bank, p=2, dim=-1)
-                # Similarity: (B, G, N); nearest target example at each grid position.
-                similarities = torch.einsum("bgd,ngd->bgn", q, keys)
-                nearest_idx = similarities.argmax(dim=-1)  # (B, G)
-                pos = torch.arange(self.grid_length, device=device)[None, :]
-                targets = bank[nearest_idx, pos]           # (B, G, D)
 
-                strength = (steering_strengths.get(i, 0.0)
-                            if isinstance(steering_strengths, dict)
-                            else (0.0 if steering_strengths is None else steering_strengths))
+                strength = (
+                    steering_strengths.get(i, 0.0)
+                    if isinstance(steering_strengths, dict)
+                    else (0.0 if steering_strengths is None else steering_strengths)
+                )
                 strength = float(strength)
                 if not 0.0 <= strength <= 1.0:
                     raise ValueError("Steering strengths must be in [0, 1].")
+
                 delta = targets - harmony_hidden
                 if steer_mask is not None:
-                    eligible = steer_mask.to(device=device, dtype=torch.bool).view(1, -1, 1)
-                    delta = delta * eligible
-                harmony_hidden_post = harmony_hidden + strength * delta
-                encoded = torch.cat([encoded[:, :self.grid_length, :], harmony_hidden_post], dim=1)
+                    eligible = torch.as_tensor(
+                        steer_mask, device=device, dtype=torch.bool
+                    )
+                    if eligible.shape != (self.grid_length,):
+                        raise ValueError(
+                            f"steer_mask must have shape ({self.grid_length},); "
+                            f"got {tuple(eligible.shape)}"
+                        )
+                    delta = delta * eligible.view(1, -1, 1)
 
-            if get_layers_output and style_banks:
-                pre_intervention_output[i] = harmony_hidden
+                harmony_hidden_post = harmony_hidden + strength * delta
+                encoded = torch.cat(
+                    [encoded[:, :self.grid_length, :], harmony_hidden_post], dim=1
+                )
+
+            if get_layers_output:
                 layers_output[i] = harmony_hidden_post
-            elif get_layers_output:
-                layers_output[i] = harmony_hidden
+                if has_banks:
+                    pre_intervention_output[i] = harmony_hidden
 
         encoded = self.output_norm(encoded)
         harmony_output = self.output_head(encoded[:, harmony_slice, :])
-        if get_layers_output and style_banks:
+        if get_layers_output:
             return harmony_output, layers_output, pre_intervention_output
-        elif get_layers_output:
-            return harmony_output, layers_output, None
         return harmony_output, None, None
     # end forward
 
@@ -341,13 +391,56 @@ class SEASModel(nn.Module):
 
 @torch.no_grad()
 def collect_harmony_layer_states(
-    model, dataloader, mask_token_id, bar_token_id, device=None
+    model, dataloader, mask_token_id, bar_token_id, device=None,
+    include_raw_states=False,
 ):
-    """Collect unsteered harmony-side states for each layer.
+    """Collect layer states and build several reference-bank formats in one pass.
 
-    melody_batches and harmony_batches may each be a tensor or an iterable of batches.
-    Returns {layer: Tensor(N, grid_length, d_model)} on CPU.
-    The harmony batches should contain explicit mask-token IDs (and preserved bar IDs).
+    The model is run on harmony inputs where chord tokens are masked and bar
+    tokens are preserved. For each layer, the returned bank dictionary contains:
+
+        state_banks[layer]["position_bank"]: (N_pieces, G, D)
+            Position-constrained bank. Grid positions are preserved.
+
+        state_banks[layer]["flatten_bank"]: (N_pieces * G, D)
+            Position-independent bank containing every grid position, in
+            piece-major then position-major order. This matches a literal flatten
+            of position_bank and includes control-token positions.
+
+        state_banks[layer]["valid_flatten_bank"]: (N_valid_states, D)
+            Position-independent bank containing only valid chord positions.
+            Prefer this bank for retrieval when bar/control states should not be
+            nearest-neighbour candidates.
+
+        state_banks[layer]["global_vector"]: (D,)
+            Mean of all valid chord-position states at that layer.
+
+        state_banks[layer]["valid_flat_indices"]: (N_valid_states, 2)
+            Optional-use metadata: [piece_index, grid_position] for each row in
+            valid_flatten_bank, in the same order as that filtered bank.
+
+        state_banks[layer]["valid_positions"]: (N_pieces, G)
+            Boolean mask indicating valid chord positions in the original labels.
+
+        state_banks[layer]["raw_states"]: (N_pieces, G, D), optional
+            Included only if include_raw_states=True. This is the same tensor as
+            position_bank, provided for readability/compatibility in analysis.
+
+    Returns:
+        state_banks, harmony_ids, valid_positions
+
+    Notes:
+        - All collected tensors are returned on CPU.
+        - The global vector is a mean over valid token states (not a mean of
+          per-piece means), so pieces with more valid chord positions contribute
+          proportionally more.
+        - `flatten_bank` has exactly N*G rows. `valid_flatten_bank` has only
+          valid chord-position rows and is generally the safer unrestricted bank.
+        - `position_bank` retains the rectangular grid, including states at
+          control-token positions. Use a query steer_mask to avoid intervening
+          on control positions. If control tokens can occur inconsistently at
+          the same grid position across pieces, consider adding reference-valid
+          masking to the position-constrained retrieval implementation.
     """
     model.eval()
     device = device or next(model.parameters()).device
@@ -355,26 +448,75 @@ def collect_harmony_layer_states(
     all_states = {i: [] for i in range(len(model.encoder_layers))}
     all_harmony_ids = []
     all_valid_positions = []
+
     for batch in dataloader:
         harmony_ids = batch["harmony_ids"]
-        # introduce masked input to the model
         harmony_input, _ = full_to_partial_masking(
             harmony_ids,
             mask_token_id,
             0,
-            bar_token_id=bar_token_id
+            bar_token_id=bar_token_id,
         )
         _, states, _ = model(
             batch["pianoroll"].to(device),
             harmony_tokens=harmony_input.to(device),
-            get_layers_output=True
+            get_layers_output=True,
         )
+
         for layer_idx, state in states.items():
             all_states[layer_idx].append(state.detach().cpu())
-        all_harmony_ids.append( batch["harmony_ids"] )
+
+        all_harmony_ids.append(harmony_ids.detach().cpu())
         valid = (harmony_ids != bar_token_id) & (harmony_ids != mask_token_id)
-        all_valid_positions.append(valid)
-    return {i: torch.cat(chunks, dim=0) for i, chunks in all_states.items() if chunks}, torch.cat(all_harmony_ids), torch.cat(all_valid_positions)
+        all_valid_positions.append(valid.detach().cpu())
+
+    harmony_ids = torch.cat(all_harmony_ids, dim=0)
+    valid_positions = torch.cat(all_valid_positions, dim=0).bool()
+
+    state_banks = {}
+    for layer_idx, chunks in all_states.items():
+        if not chunks:
+            continue
+
+        position_bank = torch.cat(chunks, dim=0)  # (N, G, D)
+        if position_bank.ndim != 3:
+            raise ValueError(
+                f"Expected layer {layer_idx} states to have shape (N, G, D); "
+                f"got {tuple(position_bank.shape)}"
+            )
+        if valid_positions.shape != position_bank.shape[:2]:
+            raise ValueError(
+                f"Validity mask shape {tuple(valid_positions.shape)} does not match "
+                f"layer {layer_idx} grid shape {tuple(position_bank.shape[:2])}"
+            )
+
+        # Literal flatten preserves every grid position and has shape (N*G, D).
+        flatten_bank = position_bank.reshape(-1, position_bank.shape[-1])
+
+        # The filtered alternative prevents bar/control states from becoming
+        # nearest-neighbour targets in position-independent retrieval.
+        valid_flatten_bank = position_bank[valid_positions]  # (N_valid_states, D)
+        if valid_flatten_bank.shape[0] == 0:
+            raise ValueError(
+                f"No valid chord positions found while building bank for layer {layer_idx}"
+            )
+
+        # Record where each valid flattened row originated.
+        valid_flat_indices = valid_positions.nonzero(as_tuple=False)
+
+        bank = {
+            "position_bank": position_bank,
+            "flatten_bank": flatten_bank.contiguous(),
+            "valid_flatten_bank": valid_flatten_bank.contiguous(),
+            "global_vector": valid_flatten_bank.mean(dim=0),
+            "valid_flat_indices": valid_flat_indices,
+            "valid_positions": valid_positions,
+        }
+        if include_raw_states:
+            bank["raw_states"] = position_bank
+        state_banks[layer_idx] = bank
+
+    return state_banks, harmony_ids, valid_positions
 # end collect_harmony_layer_states
 
 @torch.no_grad()
@@ -568,65 +710,121 @@ def tokenwise_knn_accuracy(
         }
 
     return results
+# endj tokenwise_knn_accuracy
 
-# end tokenwise_knn_accuracy
+@torch.no_grad()
+def statewise_knn_accuracy(
+    query_states,
+    reference_states,
+    query_state_labels,
+    reference_state_labels,
+    k=5,
+    metric="cosine",
+    chunk_size=2048,
+):
+    """
+    Position-independent k-NN classification of individual states.
 
-# def tokenwise_knn_accuracy(
-#     query_states, reference_states, reference_labels, query_labels,
-#     k=5, query_valid=None, reference_valid=None, metric="cosine"
-# ):
-#     """Evaluate per-token style classification, matching the same grid position.
+    Args:
+        query_states: {layer: Tensor(N_query_states, D)}.
+        reference_states: {layer: Tensor(N_reference_states, D)}.
+        query_state_labels: Tensor(N_query_states,).
+        reference_state_labels: Tensor(N_reference_states,).
+        k: Number of nearest reference states.
+        metric: "cosine" or "euclidean".
+        chunk_size: Number of query states processed per batch.
 
-#     query_states/reference_states: {layer: Tensor(N, G, D)}.
-#     Labels are 1-D tensors/lists, e.g. 0=Nottingham, 1=Jazz.
-#     Returns {layer: dict with overall token accuracy, per-position accuracy,
-#     and per-piece accuracy}. Reference states must come from training data only.
-#     """
-#     if k < 1:
-#         raise ValueError("k must be >= 1")
-#     ref_labels = torch.as_tensor(reference_labels, dtype=torch.long)
-#     qry_labels = torch.as_tensor(query_labels, dtype=torch.long)
-#     results = {}
-#     for layer_idx, q_all in query_states.items():
-#         r_all = reference_states[layer_idx].cpu()
-#         q_all = q_all.cpu()
-#         n_q, grid, dim = q_all.shape
-#         positions = (torch.ones(grid, dtype=torch.bool) if valid_positions is None
-#                      else torch.as_tensor(valid_positions, dtype=torch.bool))
-#         position_acc, correct_total, count_total = [], 0, 0
-#         piece_correct = torch.zeros(n_q, dtype=torch.float32)
-#         piece_count = 0
-#         for p in range(grid):
-#             if not positions[p]:
-#                 continue
-#             q = q_all[:, p, :]
-#             r = r_all[:, p, :]
-#             if metric == "cosine":
-#                 q = F.normalize(q, dim=-1)
-#                 r = F.normalize(r, dim=-1)
-#                 distances = 1.0 - q @ r.T
-#             elif metric == "euclidean":
-#                 distances = torch.cdist(q, r)
-#             else:
-#                 raise ValueError("metric must be 'cosine' or 'euclidean'")
-#             nn_idx = distances.topk(min(k, r.shape[0]), largest=False, dim=1).indices
-#             nn_labels = ref_labels[nn_idx]
-#             # Majority vote; ties resolve to the lower label.
-#             votes = F.one_hot(nn_labels, num_classes=int(max(ref_labels.max(), qry_labels.max()).item()) + 1).sum(dim=1)
-#             pred = votes.argmax(dim=-1)
-#             correct = pred.eq(qry_labels)
-#             correct_total += int(correct.sum())
-#             count_total += n_q
-#             piece_correct += correct.float()
-#             piece_count += 1
-#             position_acc.append(float(correct.float().mean()))
-#         results[layer_idx] = {
-#             "token_accuracy": correct_total / max(count_total, 1),
-#             "position_accuracy": position_acc,
-#             "piece_accuracy": (piece_correct / max(piece_count, 1)).tolist(),
-#         }
-#     return results
-# # end tokenwise_knn_accuracy
+    Returns:
+        Dictionary keyed by layer, with accuracy and per-class accuracy.
+    """
+    if k < 1:
+        raise ValueError("k must be >= 1")
+    if metric not in {"cosine", "euclidean"}:
+        raise ValueError("metric must be 'cosine' or 'euclidean'")
+
+    q_labels = torch.as_tensor(
+        query_state_labels, dtype=torch.long
+    ).cpu()
+    r_labels = torch.as_tensor(
+        reference_state_labels, dtype=torch.long
+    ).cpu()
+
+    if q_labels.ndim != 1 or r_labels.ndim != 1:
+        raise ValueError("State labels must be 1-D")
+
+    classes = torch.unique(
+        torch.cat([q_labels, r_labels])
+    ).sort().values
+
+    r_class_idx = torch.searchsorted(classes, r_labels)
+    q_class_idx = torch.searchsorted(classes, q_labels)
+
+    results = {}
+
+    for layer, q in query_states.items():
+        if layer not in reference_states:
+            raise KeyError(f"Missing reference layer {layer}")
+
+        q = q.detach().float().cpu()
+        r = reference_states[layer].detach().float().cpu()
+
+        if q.ndim != 2 or r.ndim != 2:
+            raise ValueError(
+                "State tensors must have shape (N_states, D)"
+            )
+        if q.shape[1] != r.shape[1]:
+            raise ValueError("Query/reference feature dimensions differ")
+        if len(q) != len(q_labels) or len(r) != len(r_labels):
+            raise ValueError("State-label count does not match bank size")
+
+        if k > len(r):
+            raise ValueError("k cannot exceed the reference bank size")
+
+        if metric == "cosine":
+            q = F.normalize(q, dim=-1)
+            r = F.normalize(r, dim=-1)
+
+        predictions = []
+
+        for start in range(0, len(q), chunk_size):
+            q_batch = q[start:start + chunk_size]
+
+            if metric == "cosine":
+                distances = 1.0 - q_batch @ r.T
+            else:
+                distances = torch.cdist(q_batch, r, p=2)
+
+            nn_idx = distances.topk(
+                k, largest=False, dim=1
+            ).indices
+
+            nn_labels = r_class_idx[nn_idx]
+            votes = F.one_hot(
+                nn_labels, num_classes=len(classes)
+            ).sum(dim=1)
+
+            predictions.append(votes.argmax(dim=-1))
+
+        pred_class_idx = torch.cat(predictions)
+        correct = pred_class_idx.eq(q_class_idx)
+
+        per_class_accuracy = {}
+        for class_idx, label in enumerate(classes.tolist()):
+            mask = q_labels == label
+            per_class_accuracy[label] = (
+                float(correct[mask].float().mean())
+                if mask.any() else float("nan")
+            )
+
+        results[layer] = {
+            "token_accuracy": float(correct.float().mean()),
+            "per_class_accuracy": per_class_accuracy,
+            "n_query_states": len(q),
+            "n_reference_states": len(r),
+        }
+
+    return results
+# end statewise_knn_accuracy
 
 
 @torch.no_grad()
