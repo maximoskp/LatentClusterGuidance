@@ -52,10 +52,14 @@ jazz_train_states = banks['jazz']['train']['states']
 nt_test_states = banks['nott']['test']['states']
 jazz_test_states = banks['jazz']['test']['states']
 
+# position bank =============================================
+print('Running for position banks')
+
 # Combine the two training sets into a reference bank.
 reference_states = {
     layer: torch.cat(
-        [nt_train_states[layer], jazz_train_states[layer]], dim=0
+        [nt_train_states[layer]['position_bank'],
+        jazz_train_states[layer]['position_bank']], dim=0
     )
     for layer in nt_train_states
 }
@@ -69,7 +73,8 @@ reference_labels = torch.cat([
 
 query_states = {
     layer: torch.cat(
-        [nt_test_states[layer], jazz_test_states[layer]], dim=0
+        [nt_test_states[layer]['position_bank'], 
+        jazz_test_states[layer]['position_bank']], dim=0
     )
     for layer in nt_test_states
 }
@@ -112,6 +117,94 @@ for layer, result in results.items():
     print(f'layer: {layer} | total_accuracy: {result["token_accuracy"]} - nott_accuracy: {nott_accuracies} - jazz_accuracy: {jazz_accuracies}')
 
 results_df = pd.DataFrame(rows)
-latex_path = 'results/latex/knn.tex'
+latex_path = 'results/latex/knn_positions.tex'
+os.makedirs(os.path.dirname(latex_path), exist_ok=True)
+results_df.to_latex(latex_path, index=False, float_format='%.4f')
+
+# flatten bank =============================================
+print('Running for flatten banks')
+# for flatten
+reference_states = {
+    layer: torch.cat([
+        nt_train_states[layer]["flatten_bank"],
+        jazz_train_states[layer]["flatten_bank"],
+    ], dim=0)
+    for layer in nt_train_states
+}
+
+reference_state_labels = torch.cat([
+    torch.zeros(
+        len(nt_train_states[layer]["flatten_bank"]),
+        dtype=torch.long,
+    ),
+    torch.ones(
+        len(jazz_train_states[layer]["flatten_bank"]),
+        dtype=torch.long,
+    ),
+])
+
+layer0 = next(iter(nt_test_states))
+
+query_states = {
+    layer: torch.cat([
+        nt_test_states[layer]["flatten_bank"],
+        jazz_test_states[layer]["flatten_bank"],
+    ], dim=0)
+    for layer in nt_test_states
+}
+
+query_state_labels = torch.cat([
+    torch.zeros(
+        len(nt_test_states[layer0]["flatten_bank"]),
+        dtype=torch.long,
+    ),
+    torch.ones(
+        len(jazz_test_states[layer0]["flatten_bank"]),
+        dtype=torch.long,
+    ),
+])
+
+nt_indices = nt_test_states[layer0]["flat_indices"][:, 0]
+jazz_indices = jazz_test_states[layer0]["flat_indices"][:, 0]
+
+query_piece_indices = torch.cat([
+    nt_indices,
+    jazz_indices + len(val_dataset_nott),
+])
+
+query_piece_labels = torch.cat([
+    torch.zeros(len(val_dataset_nott), dtype=torch.long),
+    torch.ones(len(val_dataset_gjt), dtype=torch.long),
+])
+
+# run knn ============================================================================
+print('running knn')
+
+results_flat = statewise_knn_accuracy(
+    query_states=query_states,
+    reference_states=reference_states,
+    query_state_labels=query_state_labels,
+    reference_state_labels=reference_state_labels,
+    query_piece_indices=query_piece_indices,
+    query_piece_labels=query_piece_labels,
+    k=3,
+    metric="cosine",
+)
+
+rows = []
+for layer, result in results_flat.items():
+    nott_accuracies = result["nott_accuracy"]
+    jazz_accuracies = result["jazz_accuracy"]
+    rows.append({
+        'Layer': layer,
+        'Total Accuracy': result['state_accuracy'],
+        'Nottingham Accuracy': nott_accuracies,
+        'Jazz Accuracy': jazz_accuracies,
+    })
+    print(layer, result["state_accuracy"])
+    print(f'layer: {layer} | total_accuracy: {result["state_accuracy"]} - nott_accuracy: {nott_accuracies} - jazz_accuracy: {jazz_accuracies}')
+
+results_df = pd.DataFrame(rows)
+latex_path = 'results/latex/knn_flat.tex'
 os.makedirs(os.path.dirname(latex_path), exist_ok=True)
 results_df.to_latex(latex_path, index=False, float_format='%.4f')

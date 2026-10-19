@@ -249,6 +249,7 @@ def nucleus_token_by_token_generate(
         melody_grid,            # (1, seq_len, input_dim)
         mask_token_id,        # token ID used for masking
         style_banks=None,
+        bank_key=None,
         steering_strengths=None,
         steer_mask=None,
         temperature=1.0,        # optional softmax temperature
@@ -286,6 +287,7 @@ def nucleus_token_by_token_generate(
                 melody_grid=melody_grid.to(model.device),
                 harmony_tokens=visible_harmony.to(model.device),
                 style_banks=style_banks,
+                bank_key=bank_key,
                 steering_strengths=steering_strengths,
                 steer_mask=steer_mask,
                 get_layers_output=True,
@@ -362,6 +364,7 @@ def generate_files_with_nucleus(
         midi_folder_out,
         name_suffix,
         style_banks=None,
+        bank_key=None,
         steering_strengths=None,
         steer_mask=None,
         use_constraints=False,
@@ -403,6 +406,7 @@ def generate_files_with_nucleus(
             model=model,
             melody_grid=melody_grid.to(model.device),
             style_banks=style_banks,
+            bank_key=bank_key,
             steering_strengths=steering_strengths,
             steer_mask=steer_mask,
             mask_token_id=tokenizer.mask_token_id,

@@ -104,6 +104,7 @@ class SELaCModel(nn.Module):
             harmony_tokens=None,
             get_layers_output=False,
             style_banks=None,
+            bank_key=None,
             steering_strengths=None,
             steer_mask=None
         ):
@@ -164,14 +165,14 @@ class SELaCModel(nn.Module):
 
             if style_banks is not None and i in style_banks:
                 bank = torch.as_tensor(
-                    style_banks[i], device=device, dtype=encoded.dtype
+                    style_banks[i][bank_key], device=device, dtype=encoded.dtype
                 )
                 q = harmony_hidden
                 if bank.ndim == 3:
                     # Position-constrained retrieval: bank (N, G, D), query (B, G, D).
                     if bank.shape[1:] != (self.grid_length, self.d_model):
                         raise ValueError(
-                            f"3D style_banks[{i}] must have shape "
+                            f"3D style_banks[{i}][{bank_key}] must have shape "
                             f"(N, {self.grid_length}, {self.d_model}); got {tuple(bank.shape)}"
                         )
                     q_norm = F.normalize(q, p=2, dim=-1)
@@ -185,7 +186,7 @@ class SELaCModel(nn.Module):
                     # Position-independent retrieval: each query state searches all rows.
                     if bank.shape[-1] != self.d_model or bank.shape[0] < 1:
                         raise ValueError(
-                            f"2D style_banks[{i}] must have shape (N_reference_states, "
+                            f"2D style_banks[{i}][{bank_key}] must have shape (N_reference_states, "
                             f"{self.d_model}) with N_reference_states >= 1; got {tuple(bank.shape)}"
                         )
                     q_flat = q.reshape(-1, self.d_model)
@@ -198,13 +199,13 @@ class SELaCModel(nn.Module):
                     # Global-vector steering: same target vector for every position.
                     if bank.shape[0] != self.d_model:
                         raise ValueError(
-                            f"1D style_banks[{i}] must have shape ({self.d_model},); "
+                            f"1D style_banks[{i}][{bank_key}] must have shape ({self.d_model},); "
                             f"got {tuple(bank.shape)}"
                         )
                     targets = bank.view(1, 1, self.d_model).expand(B, self.grid_length, -1)
                 else:
                     raise ValueError(
-                        f"style_banks[{i}] must be 1D, 2D, or 3D; got shape {tuple(bank.shape)}"
+                        f"style_banks[{i}][{bank_key}] must be 1D, 2D, or 3D; got shape {tuple(bank.shape)}"
                     )
 
                 strength = (
@@ -503,6 +504,14 @@ def collect_harmony_layer_states(
 
         # Record where each valid flattened row originated.
         valid_flat_indices = valid_positions.nonzero(as_tuple=False)
+        # Indices for every state, including bar and mask positions.
+        # Shape: (N_pieces * grid_length, 2).
+        # Each row is [piece_index, grid_position].
+        n_pieces, grid_length, _ = position_bank.shape
+        flat_indices = torch.cartesian_prod(
+            torch.arange(n_pieces),
+            torch.arange(grid_length),
+        )
 
         bank = {
             "position_bank": position_bank,
@@ -510,6 +519,7 @@ def collect_harmony_layer_states(
             "valid_flatten_bank": valid_flatten_bank.contiguous(),
             "global_vector": valid_flatten_bank.mean(dim=0),
             "valid_flat_indices": valid_flat_indices,
+            "flat_indices": flat_indices,
             "valid_positions": valid_positions,
         }
         if include_raw_states:

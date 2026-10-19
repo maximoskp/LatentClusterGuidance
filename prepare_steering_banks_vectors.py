@@ -82,7 +82,7 @@ nottValLoader = DataLoader(
 )
 
 # device and model ==========================================
-device_name = 'cuda:1'
+device_name = 'cuda:2'
 
 if device_name == 'cpu':
     device = torch.device('cpu')
