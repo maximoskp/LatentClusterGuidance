@@ -712,35 +712,55 @@ def tokenwise_knn_accuracy(
     return results
 # endj tokenwise_knn_accuracy
 
+
+
+import torch
+import torch.nn.functional as F
+
+
 @torch.no_grad()
 def statewise_knn_accuracy(
     query_states,
     reference_states,
     query_state_labels,
     reference_state_labels,
+    query_piece_indices,
+    query_piece_labels,
     k=5,
     metric="cosine",
     chunk_size=2048,
 ):
     """
-    Position-independent k-NN classification of individual states.
+    Position-independent k-NN classification of individual states,
+    with per-piece accuracy aggregation.
 
     Args:
         query_states: {layer: Tensor(N_query_states, D)}.
         reference_states: {layer: Tensor(N_reference_states, D)}.
-        query_state_labels: Tensor(N_query_states,).
-        reference_state_labels: Tensor(N_reference_states,).
+        query_state_labels: Style label for each query state.
+        reference_state_labels: Style label for each reference state.
+        query_piece_indices: Original piece index for each query state.
+        query_piece_labels: Style label for each query piece.
         k: Number of nearest reference states.
         metric: "cosine" or "euclidean".
         chunk_size: Number of query states processed per batch.
 
     Returns:
-        Dictionary keyed by layer, with accuracy and per-class accuracy.
+        Dictionary keyed by layer, containing:
+            state_accuracy: Accuracy over all query states.
+            piece_accuracy: Accuracy per query piece (NaN if no states).
+            piece_counts: Number of query states per piece.
+            piece_labels: Style label per query piece.
+            nott_accuracy: Mean per-piece accuracy for label 0.
+            jazz_accuracy: Mean per-piece accuracy for label 1.
+            per_class_accuracy: Mean per-piece accuracy for each class.
     """
     if k < 1:
         raise ValueError("k must be >= 1")
     if metric not in {"cosine", "euclidean"}:
         raise ValueError("metric must be 'cosine' or 'euclidean'")
+    if chunk_size < 1:
+        raise ValueError("chunk_size must be >= 1")
 
     q_labels = torch.as_tensor(
         query_state_labels, dtype=torch.long
@@ -748,17 +768,42 @@ def statewise_knn_accuracy(
     r_labels = torch.as_tensor(
         reference_state_labels, dtype=torch.long
     ).cpu()
+    piece_indices = torch.as_tensor(
+        query_piece_indices, dtype=torch.long
+    ).cpu()
+    piece_labels = torch.as_tensor(
+        query_piece_labels, dtype=torch.long
+    ).cpu()
 
     if q_labels.ndim != 1 or r_labels.ndim != 1:
         raise ValueError("State labels must be 1-D")
+    if piece_indices.ndim != 1 or piece_labels.ndim != 1:
+        raise ValueError("Piece indices and labels must be 1-D")
+    if len(q_labels) != len(piece_indices):
+        raise ValueError(
+            "query_state_labels and query_piece_indices must have equal length"
+        )
+    if len(piece_indices) > 0 and (
+        piece_indices.min() < 0 or piece_indices.max() >= len(piece_labels)
+    ):
+        raise ValueError("query_piece_indices contains an invalid piece index")
 
     classes = torch.unique(
         torch.cat([q_labels, r_labels])
     ).sort().values
+    n_classes = len(classes)
 
     r_class_idx = torch.searchsorted(classes, r_labels)
     q_class_idx = torch.searchsorted(classes, q_labels)
 
+    # Verify that each state has the style label of its parent piece.
+    if len(piece_indices) > 0:
+        if not torch.equal(q_labels, piece_labels[piece_indices]):
+            raise ValueError(
+                "Some query-state labels do not match their piece labels"
+            )
+
+    n_pieces = len(piece_labels)
     results = {}
 
     for layer, q in query_states.items():
@@ -776,7 +821,8 @@ def statewise_knn_accuracy(
             raise ValueError("Query/reference feature dimensions differ")
         if len(q) != len(q_labels) or len(r) != len(r_labels):
             raise ValueError("State-label count does not match bank size")
-
+        if len(r) == 0:
+            raise ValueError("Reference bank is empty")
         if k > len(r):
             raise ValueError("k cannot exceed the reference bank size")
 
@@ -784,7 +830,9 @@ def statewise_knn_accuracy(
             q = F.normalize(q, dim=-1)
             r = F.normalize(r, dim=-1)
 
-        predictions = []
+        correct_by_piece = torch.zeros(n_pieces, dtype=torch.long)
+        count_by_piece = torch.zeros(n_pieces, dtype=torch.long)
+        all_correct = []
 
         for start in range(0, len(q), chunk_size):
             q_batch = q[start:start + chunk_size]
@@ -800,31 +848,196 @@ def statewise_knn_accuracy(
 
             nn_labels = r_class_idx[nn_idx]
             votes = F.one_hot(
-                nn_labels, num_classes=len(classes)
+                nn_labels, num_classes=n_classes
             ).sum(dim=1)
 
-            predictions.append(votes.argmax(dim=-1))
+            pred_class_idx = votes.argmax(dim=-1)
+            correct = pred_class_idx.eq(
+                q_class_idx[start:start + len(q_batch)]
+            )
 
-        pred_class_idx = torch.cat(predictions)
-        correct = pred_class_idx.eq(q_class_idx)
+            all_correct.append(correct)
+
+            batch_piece_indices = piece_indices[
+                start:start + len(q_batch)
+            ]
+
+            # Aggregate correct predictions and counts per piece.
+            correct_by_piece.scatter_add_(
+                0, batch_piece_indices, correct.long()
+            )
+            count_by_piece.scatter_add_(
+                0, batch_piece_indices, torch.ones_like(
+                    batch_piece_indices
+                )
+            )
+
+        piece_accuracy = torch.full(
+            (n_pieces,), float("nan"), dtype=torch.float
+        )
+        has_states = count_by_piece > 0
+        piece_accuracy[has_states] = (
+            correct_by_piece[has_states].float()
+            / count_by_piece[has_states].float()
+        )
+
+        state_correct = (
+            torch.cat(all_correct)
+            if all_correct
+            else torch.empty(0, dtype=torch.bool)
+        )
 
         per_class_accuracy = {}
-        for class_idx, label in enumerate(classes.tolist()):
-            mask = q_labels == label
+        for label in classes.tolist():
+            mask = (piece_labels == label) & has_states
             per_class_accuracy[label] = (
-                float(correct[mask].float().mean())
+                float(piece_accuracy[mask].mean())
+                if mask.any() else float("nan")
+            )
+
+        def mean_piece_accuracy(label):
+            mask = (piece_labels == label) & has_states
+            return (
+                float(piece_accuracy[mask].mean())
                 if mask.any() else float("nan")
             )
 
         results[layer] = {
-            "token_accuracy": float(correct.float().mean()),
+            "state_accuracy": (
+                float(state_correct.float().mean())
+                if len(state_correct) else float("nan")
+            ),
+            "piece_accuracy": piece_accuracy.tolist(),
+            "piece_counts": count_by_piece.tolist(),
+            "piece_labels": piece_labels.tolist(),
             "per_class_accuracy": per_class_accuracy,
-            "n_query_states": len(q),
-            "n_reference_states": len(r),
+            "nott_accuracy": mean_piece_accuracy(0),
+            "jazz_accuracy": mean_piece_accuracy(1),
         }
 
     return results
 # end statewise_knn_accuracy
+
+# @torch.no_grad()
+# def statewise_knn_accuracy(
+#     query_states,
+#     reference_states,
+#     query_state_labels,
+#     reference_state_labels,
+#     k=5,
+#     metric="cosine",
+#     chunk_size=2048,
+# ):
+#     """
+#     Position-independent k-NN classification of individual states.
+
+#     Args:
+#         query_states: {layer: Tensor(N_query_states, D)}.
+#         reference_states: {layer: Tensor(N_reference_states, D)}.
+#         query_state_labels: Tensor(N_query_states,).
+#         reference_state_labels: Tensor(N_reference_states,).
+#         k: Number of nearest reference states.
+#         metric: "cosine" or "euclidean".
+#         chunk_size: Number of query states processed per batch.
+
+#     Returns:
+#         Dictionary keyed by layer, with accuracy and per-class accuracy.
+#     """
+#     if k < 1:
+#         raise ValueError("k must be >= 1")
+#     if metric not in {"cosine", "euclidean"}:
+#         raise ValueError("metric must be 'cosine' or 'euclidean'")
+
+#     q_labels = torch.as_tensor(
+#         query_state_labels, dtype=torch.long
+#     ).cpu()
+#     r_labels = torch.as_tensor(
+#         reference_state_labels, dtype=torch.long
+#     ).cpu()
+
+#     if q_labels.ndim != 1 or r_labels.ndim != 1:
+#         raise ValueError("State labels must be 1-D")
+
+#     classes = torch.unique(
+#         torch.cat([q_labels, r_labels])
+#     ).sort().values
+
+#     r_class_idx = torch.searchsorted(classes, r_labels)
+#     q_class_idx = torch.searchsorted(classes, q_labels)
+
+#     results = {}
+
+#     for layer, q in query_states.items():
+#         if layer not in reference_states:
+#             raise KeyError(f"Missing reference layer {layer}")
+
+#         q = q.detach().float().cpu()
+#         r = reference_states[layer].detach().float().cpu()
+
+#         if q.ndim != 2 or r.ndim != 2:
+#             raise ValueError(
+#                 "State tensors must have shape (N_states, D)"
+#             )
+#         if q.shape[1] != r.shape[1]:
+#             raise ValueError("Query/reference feature dimensions differ")
+#         if len(q) != len(q_labels) or len(r) != len(r_labels):
+#             raise ValueError("State-label count does not match bank size")
+
+#         if k > len(r):
+#             raise ValueError("k cannot exceed the reference bank size")
+
+#         if metric == "cosine":
+#             q = F.normalize(q, dim=-1)
+#             r = F.normalize(r, dim=-1)
+
+#         predictions = []
+
+#         for start in range(0, len(q), chunk_size):
+#             q_batch = q[start:start + chunk_size]
+
+#             if metric == "cosine":
+#                 distances = 1.0 - q_batch @ r.T
+#             else:
+#                 distances = torch.cdist(q_batch, r, p=2)
+
+#             nn_idx = distances.topk(
+#                 k, largest=False, dim=1
+#             ).indices
+
+#             nn_labels = r_class_idx[nn_idx]
+#             votes = F.one_hot(
+#                 nn_labels, num_classes=len(classes)
+#             ).sum(dim=1)
+
+#             predictions.append(votes.argmax(dim=-1))
+
+#         pred_class_idx = torch.cat(predictions)
+#         correct = pred_class_idx.eq(q_class_idx)
+
+#         per_class_accuracy = {}
+#         for class_idx, label in enumerate(classes.tolist()):
+#             mask = q_labels == label
+#             per_class_accuracy[label] = (
+#                 float(correct[mask].float().mean())
+#                 if mask.any() else float("nan")
+#             )
+
+#         piece_accuracy = torch.full((n_query,), float("nan"))
+#         has_valid_tokens = piece_count > 0
+#         piece_accuracy[has_valid_tokens] = (
+#             piece_correct[has_valid_tokens].float()
+#             / piece_count[has_valid_tokens].float()
+#         )
+
+#         results[layer] = {
+#             "token_accuracy": float(correct.float().mean()),
+#             "per_class_accuracy": per_class_accuracy,
+#             "n_query_states": len(q),
+#             "n_reference_states": len(r),
+#         }
+
+#     return results
+# # end statewise_knn_accuracy
 
 
 @torch.no_grad()

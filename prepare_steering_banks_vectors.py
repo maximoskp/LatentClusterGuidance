@@ -19,90 +19,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# helper functions for activation steering
-def _piece_balanced_mean(states, valid_mask=None):
-    """
-    states:     (N, G, D)
-    valid_mask: optional bool tensor (N, G); True = include position.
-
-    First average positions within each piece, then average pieces.
-    Thus, pieces receive equal weight even if their valid-position
-    counts differ.
-    """
-    states = states.detach().float().cpu()
-
-    if valid_mask is None:
-        return states.mean(dim=(0, 1))
-
-    valid_mask = torch.as_tensor(valid_mask, dtype=torch.bool).cpu()
-
-    if valid_mask.shape != states.shape[:2]:
-        raise ValueError(
-            f"valid_mask must have shape {tuple(states.shape[:2])}"
-        )
-
-    weights = valid_mask.unsqueeze(-1).float()
-    position_counts = weights.sum(dim=1)  # (N, 1)
-
-    piece_means = (states * weights).sum(dim=1)
-    piece_means = piece_means / position_counts.clamp_min(1.0)
-
-    # Exclude pieces with no valid positions.
-    has_valid = position_counts.squeeze(-1) > 0
-
-    if not has_valid.any():
-        raise ValueError("No valid positions available.")
-
-    return piece_means[has_valid].mean(dim=0)
-# end _piece_balanced_means
-
-def make_activation_steering_vectors(
-    jazz_train_states,
-    nottingham_train_states,
-    jazz_valid=None,
-    nottingham_valid=None,
-):
-    """
-    Returns dictionaries keyed by layer index. Each value has shape (D,).
-
-    jazz_valid / nottingham_valid:
-        Optional masks shaped (N_pieces, G), True for positions to include.
-        For example, exclude <bar> and other control-token positions.
-    """
-    if set(jazz_train_states) != set(nottingham_train_states):
-        raise ValueError("Jazz and Nottingham must contain the same layers.")
-
-    jazz_means = {}
-    nottingham_means = {}
-    contrastive_directions = {}
-    unit_directions = {}
-
-    for layer in sorted(jazz_train_states):
-        jazz_mean = _piece_balanced_mean(
-            jazz_train_states[layer],
-            None if jazz_valid is None else jazz_valid,
-        )
-        nottingham_mean = _piece_balanced_mean(
-            nottingham_train_states[layer],
-            None if nottingham_valid is None else nottingham_valid,
-        )
-
-        # Direction from the Nottingham mean toward the Jazz mean.
-        direction = jazz_mean - nottingham_mean
-
-        jazz_means[layer] = jazz_mean
-        nottingham_means[layer] = nottingham_mean
-        contrastive_directions[layer] = direction
-        unit_directions[layer] = F.normalize(direction, p=2, dim=0)
-
-    return {
-        "jazz_mean": jazz_means,
-        "nottingham_mean": nottingham_means,
-        "contrastive": contrastive_directions,
-        "contrastive_unit": unit_directions,
-    }
-# end make_activation_steering_vectors
-
 # tokenizer, special tokens and batch size =====================================
 tokenizer = CSGridMLMTokenizer(
     fixed_length=80,
@@ -231,17 +147,5 @@ banks = {
     }
 }
 
-# making activation steering vectors ===============================
-print('making activation steering vectors')
-vectors = make_activation_steering_vectors(
-    jazz_train_states,
-    nt_train_states,
-    jazz_valid=None,            # optional
-    nottingham_valid=None # optional
-)
-
 with open('data/banks.pickle', 'wb') as f:
     pickle.dump(banks, f)
-
-with open('data/vectors.pickle', 'wb') as f:
-    pickle.dump(vectors, f)

@@ -1,6 +1,7 @@
 from models_style_steering import (
     collect_harmony_layer_states,
     tokenwise_knn_accuracy,
+    statewise_knn_accuracy
 )
 from GridMLM_tokenizers import CSGridMLMTokenizer
 from data_utils import CSGridMLMDataset
