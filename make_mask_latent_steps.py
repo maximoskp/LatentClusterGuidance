@@ -161,7 +161,6 @@ for model_data in models_data:
     model = load_SELaC(
         tokenizer,
         device,
-        guidance_dim=512,
         d_model=512,
         checkpoint_path=model_data['path'],
     )

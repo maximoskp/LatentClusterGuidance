@@ -55,7 +55,6 @@ class SELaCModel(nn.Module):
             pianoroll_dim=13,      # PCP + bars only
             grid_length=80,
             dropout=0.3,
-            guidance_dim=None,
             device='cpu'
         ):
         super().__init__()

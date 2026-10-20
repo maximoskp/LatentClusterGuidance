@@ -190,13 +190,11 @@ def save_harmonized_score(score, title="Harmonized Piece", out_path="harmonized.
 def load_SELaC(
         tokenizer,
         device,
-        guidance_dim=512,
         d_model=512,
         checkpoint_path=None,
     ):
     transformer_model = SELaCModel(
         chord_vocab_size=len(tokenizer.vocab),
-        guidance_dim=guidance_dim,
         device=device,
         d_model=d_model,
         nhead=8,

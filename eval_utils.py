@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from train_utils import full_to_partial_masking
+import torch.nn.functional as F
 
 def get_results_for_individual_layer(
         model,
@@ -69,6 +70,7 @@ def latent_steering_progress(
     target_states,
     original_states,
     generated_states,
+    bank_key,
     eps=1e-12,
 ):
     """
@@ -105,15 +107,15 @@ def latent_steering_progress(
     for layer in original_states:
         # Use the original latent to select a fixed target neighbor.
         original = torch.as_tensor(
-            original_states[layer]
+            original_states[layer][bank_key]
         ).detach().float()
 
         generated = torch.as_tensor(
-            generated_states[layer]
+            generated_states[layer][bank_key]
         ).detach().float()
 
         bank = torch.as_tensor(
-            target_states[layer]
+            target_states[layer][bank_key]
         ).detach().to(device=original.device, dtype=torch.float32)
 
         if original.shape != generated.shape:
@@ -175,3 +177,101 @@ def latent_steering_progress(
 
     return results
 # end latent_steering_progress
+
+def single_layer_latent_influence(
+    model,
+    device,
+    valLoader,
+    target_train_states,
+    bank_key,
+    mask_token_id,
+    bar_token_id,
+    starting_layers,
+    examined_strengths,
+    num_layers=8
+):
+    strength_values_num = len(examined_strengths)
+    individual_layer_results = np.zeros((7, strength_values_num, num_layers))
+    for starting_layer in starting_layers:
+        # Test different strengths for layers
+        # The unsteered version corresponds to strength 0
+        # initialize all strengths as zero
+        strengths = {
+            layer: 0.0
+            for layer in range(len(model.encoder_layers))
+        }
+        results_inidividual_layer = {}
+        layer_tested = 0
+        print('layer tested: ', layer_tested)
+        for strength in examined_strengths:
+            print('strength value: ', strength)
+            for layer in range(0, len(model.encoder_layers)):
+                strengths[layer] = 0.0
+            strengths[starting_layer] = strength
+            print('strengths: ', strengths)
+
+            model.eval()
+
+            steered_states_all = {i: [] for i in range(len(model.encoder_layers))}
+            pre_out_states_all = {i: [] for i in range(len(model.encoder_layers))}
+
+            # nott melodies to jazz harmony
+            for batch in valLoader:
+                melodies = batch['pianoroll']
+                harmony_ids = batch['harmony_ids']
+                harmony_input, _ = full_to_partial_masking(
+                    harmony_ids,
+                    mask_token_id,
+                    0,
+                    bar_token_id=bar_token_id
+                )
+                valid_positions = harmony_input[ harmony_input != mask_token_id ]
+
+                with torch.no_grad():
+                    logits, steered_states, pre_out = model(
+                        melodies.to(device),
+                        harmony_tokens=harmony_input.to(device),
+                        style_banks=target_train_states,
+                        bank_key=bank_key,
+                        steering_strengths=strengths,
+                        steer_mask=None,# valid_positions.to(device),
+                        get_layers_output=True,
+                    )
+                    for layer_idx, state in steered_states.items():
+                        steered_states_all[layer_idx].append(state.detach().cpu())
+                    for layer_idx, state in pre_out.items():
+                        pre_out_states_all[layer_idx].append(state.detach().cpu())
+                    # end for
+                # end with
+            # end batch
+            results_inidividual_layer[strength] = {
+                'steered': {i: torch.cat(chunks, dim=0) for i, chunks in steered_states_all.items() if chunks},
+                'pre': {i: torch.cat(chunks, dim=0) for i, chunks in pre_out_states_all.items() if chunks}
+            }
+
+        strength_idx = 0
+        for strength in np.round(np.linspace(0, 1, 11), 1):
+            # Evaluate the post-intervention states.
+            scores_post = latent_steering_progress(
+                target_states=target_train_states,
+                bank_key=bank_key,
+                original_states=results_inidividual_layer[0]['steered'],
+                generated_states=results_inidividual_layer[strength]['steered'],
+            )
+
+            # Evaluate the pre-intervention states.
+            scores_pre = latent_steering_progress(
+                target_states=target_train_states,
+                bank_key=bank_key,
+                original_states=results_inidividual_layer[0]['steered'],
+                generated_states=results_inidividual_layer[strength]['pre'],
+            )
+            print('Strength in first layer', 10*'=')
+            for layer in range(8):
+                # layer_scores = scores_post[layer]
+                layer_scores = scores_pre[layer]
+                print(f"Mean for layer {layer}:", layer_scores.mean())
+                individual_layer_results[starting_layer, strength_idx, layer] = layer_scores.mean()
+            strength_idx += 1
+    return individual_layer_results
+# end single_layer_latent_influence
