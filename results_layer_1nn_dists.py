@@ -8,7 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from eval_utils import latent_steering_progress
+from eval_utils import single_layer_latent_influence, all_layers_latent_influence, make_imshow_of_inividual_layer_results, make_imshow_of_all_layers_results
 
 load_dotenv()
 
@@ -50,7 +50,7 @@ nottValLoader = DataLoader(
 
 # load model ================================================
 print('loading model')
-device_name = 'cuda:2'
+device_name = 'cuda:1'
 
 if device_name == 'cpu':
     device = torch.device('cpu')
@@ -82,5 +82,82 @@ jazz_test_states = banks['jazz']['test']['states']
 
 # run ========================================================
 
+inidividual_results_base_path = 'figs/layer_influence/individual/'
+os.makedirs(inidividual_results_base_path, exist_ok=True)
+every_results_base_path = 'figs/layer_influence/every/'
+os.makedirs(every_results_base_path, exist_ok=True)
+
+examined_strengths = np.round(np.linspace(0, 1, 11), 1)
+
+individual_layer_results = {
+    'nott2jazz': {},
+    'jazz2nott': {}
+}
+all_layer_results = {
+    'nott2jazz': {},
+    'jazz2nott': {}
+}
+
 for bank_key in ['position_bank', 'flatten_bank', 'global_vector']:
-    pass
+    # individual
+    individual_layer_results['nott2jazz'][bank_key] = single_layer_latent_influence(
+        model,
+        device,
+        nottValLoader,
+        jazz_train_states,
+        bank_key,
+        tokenizer.mask_token_id,
+        tokenizer.bar_token_id,
+        examined_strengths,
+        num_layers=8
+    )
+    make_imshow_of_inividual_layer_results(
+        individual_layer_results['nott2jazz'][bank_key],
+        fig_path=inidividual_results_base_path + f'nott2jazz_{bank_key}.png'
+    )
+    individual_layer_results['jazz2nott'][bank_key] = single_layer_latent_influence(
+        model,
+        device,
+        gjtValLoader,
+        nt_train_states,
+        bank_key,
+        tokenizer.mask_token_id,
+        tokenizer.bar_token_id,
+        examined_strengths,
+        num_layers=8
+    )
+    make_imshow_of_inividual_layer_results(
+        individual_layer_results['jazz2nott'][bank_key],
+        fig_path=inidividual_results_base_path + f'jazz2nott_{bank_key}.png'
+    )
+    # all
+    all_layer_results['nott2jazz'][bank_key] = all_layers_latent_influence(
+        model,
+        device,
+        nottValLoader,
+        jazz_train_states,
+        bank_key,
+        tokenizer.mask_token_id,
+        tokenizer.bar_token_id,
+        examined_strengths,
+        num_layers=8
+    )
+    make_imshow_of_all_layers_results(
+        all_layer_results['nott2jazz'][bank_key],
+        fig_path=every_results_base_path + f'nott2jazz_{bank_key}.png'
+    )
+    all_layer_results['jazz2nott'][bank_key] = all_layers_latent_influence(
+        model,
+        device,
+        gjtValLoader,
+        nt_train_states,
+        bank_key,
+        tokenizer.mask_token_id,
+        tokenizer.bar_token_id,
+        examined_strengths,
+        num_layers=8
+    )
+    make_imshow_of_all_layers_results(
+        all_layer_results['jazz2nott'][bank_key],
+        fig_path=every_results_base_path + f'jazz2nott_{bank_key}.png'
+    )
