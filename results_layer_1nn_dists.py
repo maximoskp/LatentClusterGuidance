@@ -98,66 +98,75 @@ all_layer_results = {
     'jazz2nott': {}
 }
 
-for bank_key in ['position_bank', 'flatten_bank', 'global_vector']:
-    # individual
-    individual_layer_results['nott2jazz'][bank_key] = single_layer_latent_influence(
-        model,
-        device,
-        nottValLoader,
-        jazz_train_states,
-        bank_key,
-        tokenizer.mask_token_id,
-        tokenizer.bar_token_id,
-        examined_strengths,
-        num_layers=8
-    )
-    make_imshow_of_inividual_layer_results(
-        individual_layer_results['nott2jazz'][bank_key],
-        fig_path=inidividual_results_base_path + f'nott2jazz_{bank_key}.png'
-    )
-    individual_layer_results['jazz2nott'][bank_key] = single_layer_latent_influence(
-        model,
-        device,
-        gjtValLoader,
-        nt_train_states,
-        bank_key,
-        tokenizer.mask_token_id,
-        tokenizer.bar_token_id,
-        examined_strengths,
-        num_layers=8
-    )
-    make_imshow_of_inividual_layer_results(
-        individual_layer_results['jazz2nott'][bank_key],
-        fig_path=inidividual_results_base_path + f'jazz2nott_{bank_key}.png'
-    )
-    # all
-    all_layer_results['nott2jazz'][bank_key] = all_layers_latent_influence(
-        model,
-        device,
-        nottValLoader,
-        jazz_train_states,
-        bank_key,
-        tokenizer.mask_token_id,
-        tokenizer.bar_token_id,
-        examined_strengths,
-        num_layers=8
-    )
-    make_imshow_of_all_layers_results(
-        all_layer_results['nott2jazz'][bank_key],
-        fig_path=every_results_base_path + f'nott2jazz_{bank_key}.png'
-    )
-    all_layer_results['jazz2nott'][bank_key] = all_layers_latent_influence(
-        model,
-        device,
-        gjtValLoader,
-        nt_train_states,
-        bank_key,
-        tokenizer.mask_token_id,
-        tokenizer.bar_token_id,
-        examined_strengths,
-        num_layers=8
-    )
-    make_imshow_of_all_layers_results(
-        all_layer_results['jazz2nott'][bank_key],
-        fig_path=every_results_base_path + f'jazz2nott_{bank_key}.png'
-    )
+for bank_key in ['position_bank', 'flatten_bank']:# ['position_bank', 'flatten_bank', 'global_vector']:
+    individual_layer_results['nott2jazz'][bank_key] = {}
+    individual_layer_results['jazz2nott'][bank_key] = {}
+    all_layer_results['nott2jazz'][bank_key] = {}
+    all_layer_results['jazz2nott'][bank_key] = {}
+    for neighbors_number in [20] if bank_key != 'global_vector' else [1]:
+        # individual
+        individual_layer_results['nott2jazz'][bank_key][neighbors_number] = single_layer_latent_influence(
+            model,
+            device,
+            nottValLoader,
+            jazz_train_states,
+            bank_key,
+            neighbors_number,
+            tokenizer.mask_token_id,
+            tokenizer.bar_token_id,
+            examined_strengths,
+            num_layers=8
+        )
+        make_imshow_of_inividual_layer_results(
+            individual_layer_results['nott2jazz'][bank_key][neighbors_number],
+            fig_path=inidividual_results_base_path + f'nott2jazz_{bank_key}_N{neighbors_number}.png'
+        )
+        individual_layer_results['jazz2nott'][bank_key][neighbors_number] = single_layer_latent_influence(
+            model,
+            device,
+            gjtValLoader,
+            nt_train_states,
+            bank_key,
+            neighbors_number,
+            tokenizer.mask_token_id,
+            tokenizer.bar_token_id,
+            examined_strengths,
+            num_layers=8
+        )
+        make_imshow_of_inividual_layer_results(
+            individual_layer_results['jazz2nott'][bank_key][neighbors_number],
+            fig_path=inidividual_results_base_path + f'jazz2nott_{bank_key}_N{neighbors_number}.png'
+        )
+        # all
+        all_layer_results['nott2jazz'][bank_key][neighbors_number] = all_layers_latent_influence(
+            model,
+            device,
+            nottValLoader,
+            jazz_train_states,
+            bank_key,
+            neighbors_number,
+            tokenizer.mask_token_id,
+            tokenizer.bar_token_id,
+            examined_strengths,
+            num_layers=8
+        )
+        make_imshow_of_all_layers_results(
+            all_layer_results['nott2jazz'][bank_key][neighbors_number],
+            fig_path=every_results_base_path + f'nott2jazz_{bank_key}_N{neighbors_number}.png'
+        )
+        all_layer_results['jazz2nott'][bank_key][neighbors_number] = all_layers_latent_influence(
+            model,
+            device,
+            gjtValLoader,
+            nt_train_states,
+            bank_key,
+            neighbors_number,
+            tokenizer.mask_token_id,
+            tokenizer.bar_token_id,
+            examined_strengths,
+            num_layers=8
+        )
+        make_imshow_of_all_layers_results(
+            all_layer_results['jazz2nott'][bank_key][neighbors_number],
+            fig_path=every_results_base_path + f'jazz2nott_{bank_key}_N{neighbors_number}.png'
+        )

@@ -1,6 +1,7 @@
 saved_models/
 data/
 MIDIs/
+old/
 *.zip
 
 # Byte-compiled / optimized / DLL files

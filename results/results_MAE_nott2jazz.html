@@ -1,0 +1,1273 @@
+
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Metrics Results by Setup/Instance</title>
+        <style>
+          table { border-collapse: collapse; margin-bottom: 30px; }
+          th, td { border: 1px solid black; padding: 5px; text-align: center; }
+          caption { caption-side: top; font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+          h3 { margin-top: 0; }
+        </style>
+      </head>
+      <body>
+        
+    <div style="margin-bottom: 30px;">
+      <h2>Metrics Information</h2>
+      <ul>
+         <li><strong>CHE</strong>: Chord Histogram Entropy</li>
+         <li><strong>CC</strong>: Chord Coverage</li>
+         <li><strong>CTD</strong>: Chord Tonal Distance</li>
+         <li><strong>CTnCTR</strong>: Chord Tone to Non-Chord Tone Ratio</li>
+         <li><strong>PCS</strong>: Pitch Consonance Score</li>
+         <li><strong>MCTD</strong>: Melody-chord Tonal Distance</li>
+         <li><strong>HRHE_i</strong>: Harmonic Rhythm Entropy (intervals)</li>
+         <li><strong>HRC_i</strong>: Harmonic Rhythm Coverage</li>
+         <li><strong>CBS</strong>: Chord Beat Strength</li>
+      </ul>
+      <p><em>M(R)AE table shows mean (relative) absolute difference to target across matched files. Lower is better.</em></p>
+    </div>
+    
+        <style type="text/css">
+#T_aba73_row1_col5, #T_aba73_row3_col3, #T_aba73_row4_col9, #T_aba73_row6_col4, #T_aba73_row6_col6, #T_aba73_row8_col1, #T_aba73_row8_col2, #T_aba73_row8_col8, #T_aba73_row9_col7 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_aba73">
+  <caption><h3>Setup: flatten_bank — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_aba73_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_aba73_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_aba73_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_aba73_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_aba73_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_aba73_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_aba73_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_aba73_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_aba73_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_aba73_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_aba73_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_aba73_row0_col0" class="data row0 col0" >Ground Truth</td>
+      <td id="T_aba73_row0_col1" class="data row0 col1" >1.159809</td>
+      <td id="T_aba73_row0_col2" class="data row0 col2" >4.133333</td>
+      <td id="T_aba73_row0_col3" class="data row0 col3" >0.890099</td>
+      <td id="T_aba73_row0_col4" class="data row0 col4" >0.657519</td>
+      <td id="T_aba73_row0_col5" class="data row0 col5" >2.355556</td>
+      <td id="T_aba73_row0_col6" class="data row0 col6" >0.233859</td>
+      <td id="T_aba73_row0_col7" class="data row0 col7" >0.904716</td>
+      <td id="T_aba73_row0_col8" class="data row0 col8" >0.516821</td>
+      <td id="T_aba73_row0_col9" class="data row0 col9" >1.294533</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_aba73_row1_col0" class="data row1 col0" >Target</td>
+      <td id="T_aba73_row1_col1" class="data row1 col1" >2.171756</td>
+      <td id="T_aba73_row1_col2" class="data row1 col2" >11.571429</td>
+      <td id="T_aba73_row1_col3" class="data row1 col3" >0.804265</td>
+      <td id="T_aba73_row1_col4" class="data row1 col4" >0.545280</td>
+      <td id="T_aba73_row1_col5" class="data row1 col5" >2.178571</td>
+      <td id="T_aba73_row1_col6" class="data row1 col6" >0.227516</td>
+      <td id="T_aba73_row1_col7" class="data row1 col7" >0.858131</td>
+      <td id="T_aba73_row1_col8" class="data row1 col8" >0.333803</td>
+      <td id="T_aba73_row1_col9" class="data row1 col9" >1.371319</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_aba73_row2_col0" class="data row2 col0" >L-1_S0.5</td>
+      <td id="T_aba73_row2_col1" class="data row2 col1" >2.340917</td>
+      <td id="T_aba73_row2_col2" class="data row2 col2" >15.464286</td>
+      <td id="T_aba73_row2_col3" class="data row2 col3" >0.855422</td>
+      <td id="T_aba73_row2_col4" class="data row2 col4" >0.932900</td>
+      <td id="T_aba73_row2_col5" class="data row2 col5" >3.285714</td>
+      <td id="T_aba73_row2_col6" class="data row2 col6" >0.509664</td>
+      <td id="T_aba73_row2_col7" class="data row2 col7" >0.880585</td>
+      <td id="T_aba73_row2_col8" class="data row2 col8" >0.399407</td>
+      <td id="T_aba73_row2_col9" class="data row2 col9" >1.349305</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_aba73_row3_col0" class="data row3 col0" >L-1_S1.0</td>
+      <td id="T_aba73_row3_col1" class="data row3 col1" >2.790178</td>
+      <td id="T_aba73_row3_col2" class="data row3 col2" >21.000000</td>
+      <td id="T_aba73_row3_col3" class="data row3 col3" >0.888933</td>
+      <td id="T_aba73_row3_col4" class="data row3 col4" >0.758756</td>
+      <td id="T_aba73_row3_col5" class="data row3 col5" >3.035714</td>
+      <td id="T_aba73_row3_col6" class="data row3 col6" >0.576976</td>
+      <td id="T_aba73_row3_col7" class="data row3 col7" >0.798537</td>
+      <td id="T_aba73_row3_col8" class="data row3 col8" >0.277614</td>
+      <td id="T_aba73_row3_col9" class="data row3 col9" >1.428329</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_aba73_row4_col0" class="data row4 col0" >L0_S0.5</td>
+      <td id="T_aba73_row4_col1" class="data row4 col1" >1.349097</td>
+      <td id="T_aba73_row4_col2" class="data row4 col2" >5.142857</td>
+      <td id="T_aba73_row4_col3" class="data row4 col3" >0.884110</td>
+      <td id="T_aba73_row4_col4" class="data row4 col4" >0.741522</td>
+      <td id="T_aba73_row4_col5" class="data row4 col5" >2.642857</td>
+      <td id="T_aba73_row4_col6" class="data row4 col6" >0.238649</td>
+      <td id="T_aba73_row4_col7" class="data row4 col7" >0.916036</td>
+      <td id="T_aba73_row4_col8" class="data row4 col8" >0.510779</td>
+      <td id="T_aba73_row4_col9" class="data row4 col9" >1.294383</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_aba73_row5_col0" class="data row5 col0" >L0_S1.0</td>
+      <td id="T_aba73_row5_col1" class="data row5 col1" >1.358839</td>
+      <td id="T_aba73_row5_col2" class="data row5 col2" >5.357143</td>
+      <td id="T_aba73_row5_col3" class="data row5 col3" >0.868795</td>
+      <td id="T_aba73_row5_col4" class="data row5 col4" >0.822166</td>
+      <td id="T_aba73_row5_col5" class="data row5 col5" >2.928571</td>
+      <td id="T_aba73_row5_col6" class="data row5 col6" >0.261761</td>
+      <td id="T_aba73_row5_col7" class="data row5 col7" >0.917733</td>
+      <td id="T_aba73_row5_col8" class="data row5 col8" >0.507118</td>
+      <td id="T_aba73_row5_col9" class="data row5 col9" >1.298067</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_aba73_row6_col0" class="data row6 col0" >L4_S0.5</td>
+      <td id="T_aba73_row6_col1" class="data row6 col1" >1.307644</td>
+      <td id="T_aba73_row6_col2" class="data row6 col2" >5.071429</td>
+      <td id="T_aba73_row6_col3" class="data row6 col3" >0.934558</td>
+      <td id="T_aba73_row6_col4" class="data row6 col4" >0.656645</td>
+      <td id="T_aba73_row6_col5" class="data row6 col5" >2.535714</td>
+      <td id="T_aba73_row6_col6" class="data row6 col6" >0.232558</td>
+      <td id="T_aba73_row6_col7" class="data row6 col7" >0.922569</td>
+      <td id="T_aba73_row6_col8" class="data row6 col8" >0.510578</td>
+      <td id="T_aba73_row6_col9" class="data row6 col9" >1.295295</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_aba73_row7_col0" class="data row7 col0" >L4_S1.0</td>
+      <td id="T_aba73_row7_col1" class="data row7 col1" >1.396538</td>
+      <td id="T_aba73_row7_col2" class="data row7 col2" >6.000000</td>
+      <td id="T_aba73_row7_col3" class="data row7 col3" >0.886292</td>
+      <td id="T_aba73_row7_col4" class="data row7 col4" >0.887364</td>
+      <td id="T_aba73_row7_col5" class="data row7 col5" >2.928571</td>
+      <td id="T_aba73_row7_col6" class="data row7 col6" >0.281072</td>
+      <td id="T_aba73_row7_col7" class="data row7 col7" >0.919244</td>
+      <td id="T_aba73_row7_col8" class="data row7 col8" >0.500476</td>
+      <td id="T_aba73_row7_col9" class="data row7 col9" >1.297831</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row8" class="row_heading level0 row8" >8</th>
+      <td id="T_aba73_row8_col0" class="data row8 col0" >L6_S0.5</td>
+      <td id="T_aba73_row8_col1" class="data row8 col1" >1.271882</td>
+      <td id="T_aba73_row8_col2" class="data row8 col2" >4.678571</td>
+      <td id="T_aba73_row8_col3" class="data row8 col3" >0.926167</td>
+      <td id="T_aba73_row8_col4" class="data row8 col4" >0.698561</td>
+      <td id="T_aba73_row8_col5" class="data row8 col5" >2.535714</td>
+      <td id="T_aba73_row8_col6" class="data row8 col6" >0.240785</td>
+      <td id="T_aba73_row8_col7" class="data row8 col7" >0.922990</td>
+      <td id="T_aba73_row8_col8" class="data row8 col8" >0.514929</td>
+      <td id="T_aba73_row8_col9" class="data row8 col9" >1.289845</td>
+    </tr>
+    <tr>
+      <th id="T_aba73_level0_row9" class="row_heading level0 row9" >9</th>
+      <td id="T_aba73_row9_col0" class="data row9 col0" >L6_S1.0</td>
+      <td id="T_aba73_row9_col1" class="data row9 col1" >1.679587</td>
+      <td id="T_aba73_row9_col2" class="data row9 col2" >8.107143</td>
+      <td id="T_aba73_row9_col3" class="data row9 col3" >0.884910</td>
+      <td id="T_aba73_row9_col4" class="data row9 col4" >0.936201</td>
+      <td id="T_aba73_row9_col5" class="data row9 col5" >3.178571</td>
+      <td id="T_aba73_row9_col6" class="data row9 col6" >0.334724</td>
+      <td id="T_aba73_row9_col7" class="data row9 col7" >0.907650</td>
+      <td id="T_aba73_row9_col8" class="data row9 col8" >0.480981</td>
+      <td id="T_aba73_row9_col9" class="data row9 col9" >1.307029</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_6afc6_row0_col1, #T_6afc6_row0_col7, #T_6afc6_row1_col3, #T_6afc6_row1_col4, #T_6afc6_row1_col8, #T_6afc6_row1_col9, #T_6afc6_row2_col5, #T_6afc6_row6_col6, #T_6afc6_row7_col2 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_6afc6">
+  <caption><h3>Setup: flatten_bank — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_6afc6_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_6afc6_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_6afc6_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_6afc6_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_6afc6_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_6afc6_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_6afc6_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_6afc6_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_6afc6_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_6afc6_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_6afc6_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_6afc6_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_6afc6_row0_col1" class="data row0 col1" >0.487165</td>
+      <td id="T_6afc6_row0_col2" class="data row0 col2" >6.250000</td>
+      <td id="T_6afc6_row0_col3" class="data row0 col3" >0.173585</td>
+      <td id="T_6afc6_row0_col4" class="data row0 col4" >0.393421</td>
+      <td id="T_6afc6_row0_col5" class="data row0 col5" >1.250000</td>
+      <td id="T_6afc6_row0_col6" class="data row0 col6" >0.307502</td>
+      <td id="T_6afc6_row0_col7" class="data row0 col7" >0.084572</td>
+      <td id="T_6afc6_row0_col8" class="data row0 col8" >0.111829</td>
+      <td id="T_6afc6_row0_col9" class="data row0 col9" >0.085656</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_6afc6_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_6afc6_row1_col1" class="data row1 col1" >0.672737</td>
+      <td id="T_6afc6_row1_col2" class="data row1 col2" >9.857143</td>
+      <td id="T_6afc6_row1_col3" class="data row1 col3" >0.147714</td>
+      <td id="T_6afc6_row1_col4" class="data row1 col4" >0.301011</td>
+      <td id="T_6afc6_row1_col5" class="data row1 col5" >1.071429</td>
+      <td id="T_6afc6_row1_col6" class="data row1 col6" >0.355099</td>
+      <td id="T_6afc6_row1_col7" class="data row1 col7" >0.101470</td>
+      <td id="T_6afc6_row1_col8" class="data row1 col8" >0.096813</td>
+      <td id="T_6afc6_row1_col9" class="data row1 col9" >0.079737</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_6afc6_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_6afc6_row2_col1" class="data row2 col1" >0.898210</td>
+      <td id="T_6afc6_row2_col2" class="data row2 col2" >6.785714</td>
+      <td id="T_6afc6_row2_col3" class="data row2 col3" >0.219978</td>
+      <td id="T_6afc6_row2_col4" class="data row2 col4" >0.364110</td>
+      <td id="T_6afc6_row2_col5" class="data row2 col5" >0.821429</td>
+      <td id="T_6afc6_row2_col6" class="data row2 col6" >0.183519</td>
+      <td id="T_6afc6_row2_col7" class="data row2 col7" >0.101828</td>
+      <td id="T_6afc6_row2_col8" class="data row2 col8" >0.187871</td>
+      <td id="T_6afc6_row2_col9" class="data row2 col9" >0.111769</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_6afc6_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_6afc6_row3_col1" class="data row3 col1" >0.898986</td>
+      <td id="T_6afc6_row3_col2" class="data row3 col2" >6.642857</td>
+      <td id="T_6afc6_row3_col3" class="data row3 col3" >0.231329</td>
+      <td id="T_6afc6_row3_col4" class="data row3 col4" >0.448109</td>
+      <td id="T_6afc6_row3_col5" class="data row3 col5" >1.178571</td>
+      <td id="T_6afc6_row3_col6" class="data row3 col6" >0.188928</td>
+      <td id="T_6afc6_row3_col7" class="data row3 col7" >0.105825</td>
+      <td id="T_6afc6_row3_col8" class="data row3 col8" >0.182667</td>
+      <td id="T_6afc6_row3_col9" class="data row3 col9" >0.109900</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_6afc6_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_6afc6_row4_col1" class="data row4 col1" >0.949465</td>
+      <td id="T_6afc6_row4_col2" class="data row4 col2" >6.928571</td>
+      <td id="T_6afc6_row4_col3" class="data row4 col3" >0.242129</td>
+      <td id="T_6afc6_row4_col4" class="data row4 col4" >0.355907</td>
+      <td id="T_6afc6_row4_col5" class="data row4 col5" >0.928571</td>
+      <td id="T_6afc6_row4_col6" class="data row4 col6" >0.186759</td>
+      <td id="T_6afc6_row4_col7" class="data row4 col7" >0.104386</td>
+      <td id="T_6afc6_row4_col8" class="data row4 col8" >0.192297</td>
+      <td id="T_6afc6_row4_col9" class="data row4 col9" >0.113681</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_6afc6_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_6afc6_row5_col1" class="data row5 col1" >0.863195</td>
+      <td id="T_6afc6_row5_col2" class="data row5 col2" >6.142857</td>
+      <td id="T_6afc6_row5_col3" class="data row5 col3" >0.219362</td>
+      <td id="T_6afc6_row5_col4" class="data row5 col4" >0.491836</td>
+      <td id="T_6afc6_row5_col5" class="data row5 col5" >1.178571</td>
+      <td id="T_6afc6_row5_col6" class="data row5 col6" >0.192610</td>
+      <td id="T_6afc6_row5_col7" class="data row5 col7" >0.092126</td>
+      <td id="T_6afc6_row5_col8" class="data row5 col8" >0.185292</td>
+      <td id="T_6afc6_row5_col9" class="data row5 col9" >0.110356</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_6afc6_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_6afc6_row6_col1" class="data row6 col1" >0.955642</td>
+      <td id="T_6afc6_row6_col2" class="data row6 col2" >7.035714</td>
+      <td id="T_6afc6_row6_col3" class="data row6 col3" >0.242081</td>
+      <td id="T_6afc6_row6_col4" class="data row6 col4" >0.363759</td>
+      <td id="T_6afc6_row6_col5" class="data row6 col5" >1.000000</td>
+      <td id="T_6afc6_row6_col6" class="data row6 col6" >0.181675</td>
+      <td id="T_6afc6_row6_col7" class="data row6 col7" >0.091913</td>
+      <td id="T_6afc6_row6_col8" class="data row6 col8" >0.189461</td>
+      <td id="T_6afc6_row6_col9" class="data row6 col9" >0.111983</td>
+    </tr>
+    <tr>
+      <th id="T_6afc6_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_6afc6_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_6afc6_row7_col1" class="data row7 col1" >0.641920</td>
+      <td id="T_6afc6_row7_col2" class="data row7 col2" >4.964286</td>
+      <td id="T_6afc6_row7_col3" class="data row7 col3" >0.224081</td>
+      <td id="T_6afc6_row7_col4" class="data row7 col4" >0.434138</td>
+      <td id="T_6afc6_row7_col5" class="data row7 col5" >1.142857</td>
+      <td id="T_6afc6_row7_col6" class="data row7 col6" >0.183964</td>
+      <td id="T_6afc6_row7_col7" class="data row7 col7" >0.095380</td>
+      <td id="T_6afc6_row7_col8" class="data row7 col8" >0.163486</td>
+      <td id="T_6afc6_row7_col9" class="data row7 col9" >0.104855</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_35234_row0_col7, #T_35234_row1_col4, #T_35234_row1_col8, #T_35234_row1_col9, #T_35234_row2_col5, #T_35234_row5_col3, #T_35234_row6_col6, #T_35234_row7_col1, #T_35234_row7_col2 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_35234">
+  <caption><h3>Setup: flatten_bank — Mean Relative Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_35234_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_35234_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_35234_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_35234_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_35234_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_35234_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_35234_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_35234_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_35234_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_35234_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_35234_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_35234_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_35234_row0_col1" class="data row0 col1" >0.319466</td>
+      <td id="T_35234_row0_col2" class="data row0 col2" >0.882940</td>
+      <td id="T_35234_row0_col3" class="data row0 col3" >0.550053</td>
+      <td id="T_35234_row0_col4" class="data row0 col4" >0.523159</td>
+      <td id="T_35234_row0_col5" class="data row0 col5" >0.770833</td>
+      <td id="T_35234_row0_col6" class="data row0 col6" >2.028092</td>
+      <td id="T_35234_row0_col7" class="data row0 col7" >0.102666</td>
+      <td id="T_35234_row0_col8" class="data row0 col8" >0.428735</td>
+      <td id="T_35234_row0_col9" class="data row0 col9" >0.062823</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_35234_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_35234_row1_col1" class="data row1 col1" >0.480874</td>
+      <td id="T_35234_row1_col2" class="data row1 col2" >1.599706</td>
+      <td id="T_35234_row1_col3" class="data row1 col3" >0.538061</td>
+      <td id="T_35234_row1_col4" class="data row1 col4" >0.351719</td>
+      <td id="T_35234_row1_col5" class="data row1 col5" >0.684524</td>
+      <td id="T_35234_row1_col6" class="data row1 col6" >2.286656</td>
+      <td id="T_35234_row1_col7" class="data row1 col7" >0.116713</td>
+      <td id="T_35234_row1_col8" class="data row1 col8" >0.288291</td>
+      <td id="T_35234_row1_col9" class="data row1 col9" >0.060378</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_35234_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_35234_row2_col1" class="data row2 col1" >0.405969</td>
+      <td id="T_35234_row2_col2" class="data row2 col2" >0.555497</td>
+      <td id="T_35234_row2_col3" class="data row2 col3" >0.632437</td>
+      <td id="T_35234_row2_col4" class="data row2 col4" >0.464422</td>
+      <td id="T_35234_row2_col5" class="data row2 col5" >0.526786</td>
+      <td id="T_35234_row2_col6" class="data row2 col6" >1.145166</td>
+      <td id="T_35234_row2_col7" class="data row2 col7" >0.126169</td>
+      <td id="T_35234_row2_col8" class="data row2 col8" >0.719987</td>
+      <td id="T_35234_row2_col9" class="data row2 col9" >0.080089</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_35234_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_35234_row3_col1" class="data row3 col1" >0.412026</td>
+      <td id="T_35234_row3_col2" class="data row3 col2" >0.553172</td>
+      <td id="T_35234_row3_col3" class="data row3 col3" >0.640000</td>
+      <td id="T_35234_row3_col4" class="data row3 col4" >0.559034</td>
+      <td id="T_35234_row3_col5" class="data row3 col5" >0.711310</td>
+      <td id="T_35234_row3_col6" class="data row3 col6" >1.208791</td>
+      <td id="T_35234_row3_col7" class="data row3 col7" >0.130805</td>
+      <td id="T_35234_row3_col8" class="data row3 col8" >0.699800</td>
+      <td id="T_35234_row3_col9" class="data row3 col9" >0.078880</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_35234_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_35234_row4_col1" class="data row4 col1" >0.432086</td>
+      <td id="T_35234_row4_col2" class="data row4 col2" >0.572274</td>
+      <td id="T_35234_row4_col3" class="data row4 col3" >0.603197</td>
+      <td id="T_35234_row4_col4" class="data row4 col4" >0.417198</td>
+      <td id="T_35234_row4_col5" class="data row4 col5" >0.580357</td>
+      <td id="T_35234_row4_col6" class="data row4 col6" >1.090861</td>
+      <td id="T_35234_row4_col7" class="data row4 col7" >0.129290</td>
+      <td id="T_35234_row4_col8" class="data row4 col8" >0.738234</td>
+      <td id="T_35234_row4_col9" class="data row4 col9" >0.081693</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_35234_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_35234_row5_col1" class="data row5 col1" >0.393388</td>
+      <td id="T_35234_row5_col2" class="data row5 col2" >0.511450</td>
+      <td id="T_35234_row5_col3" class="data row5 col3" >0.524748</td>
+      <td id="T_35234_row5_col4" class="data row5 col4" >0.626636</td>
+      <td id="T_35234_row5_col5" class="data row5 col5" >0.750000</td>
+      <td id="T_35234_row5_col6" class="data row5 col6" >1.197776</td>
+      <td id="T_35234_row5_col7" class="data row5 col7" >0.116323</td>
+      <td id="T_35234_row5_col8" class="data row5 col8" >0.710926</td>
+      <td id="T_35234_row5_col9" class="data row5 col9" >0.079056</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_35234_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_35234_row6_col1" class="data row6 col1" >0.428639</td>
+      <td id="T_35234_row6_col2" class="data row6 col2" >0.551541</td>
+      <td id="T_35234_row6_col3" class="data row6 col3" >0.650130</td>
+      <td id="T_35234_row6_col4" class="data row6 col4" >0.420361</td>
+      <td id="T_35234_row6_col5" class="data row6 col5" >0.630952</td>
+      <td id="T_35234_row6_col6" class="data row6 col6" >1.001213</td>
+      <td id="T_35234_row6_col7" class="data row6 col7" >0.115114</td>
+      <td id="T_35234_row6_col8" class="data row6 col8" >0.738177</td>
+      <td id="T_35234_row6_col9" class="data row6 col9" >0.080048</td>
+    </tr>
+    <tr>
+      <th id="T_35234_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_35234_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_35234_row7_col1" class="data row7 col1" >0.309157</td>
+      <td id="T_35234_row7_col2" class="data row7 col2" >0.443841</td>
+      <td id="T_35234_row7_col3" class="data row7 col3" >0.574517</td>
+      <td id="T_35234_row7_col4" class="data row7 col4" >0.513727</td>
+      <td id="T_35234_row7_col5" class="data row7 col5" >0.741071</td>
+      <td id="T_35234_row7_col6" class="data row7 col6" >1.122655</td>
+      <td id="T_35234_row7_col7" class="data row7 col7" >0.119234</td>
+      <td id="T_35234_row7_col8" class="data row7 col8" >0.647142</td>
+      <td id="T_35234_row7_col9" class="data row7 col9" >0.074978</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_269bb_row4_col6, #T_269bb_row4_col7, #T_269bb_row6_col1, #T_269bb_row6_col2, #T_269bb_row6_col3, #T_269bb_row6_col8, #T_269bb_row6_col9, #T_269bb_row8_col4, #T_269bb_row8_col5 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_269bb">
+  <caption><h3>Setup: global_vector — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_269bb_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_269bb_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_269bb_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_269bb_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_269bb_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_269bb_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_269bb_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_269bb_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_269bb_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_269bb_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_269bb_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_269bb_row0_col0" class="data row0 col0" >Ground Truth</td>
+      <td id="T_269bb_row0_col1" class="data row0 col1" >1.159809</td>
+      <td id="T_269bb_row0_col2" class="data row0 col2" >4.133333</td>
+      <td id="T_269bb_row0_col3" class="data row0 col3" >0.890099</td>
+      <td id="T_269bb_row0_col4" class="data row0 col4" >0.657519</td>
+      <td id="T_269bb_row0_col5" class="data row0 col5" >2.355556</td>
+      <td id="T_269bb_row0_col6" class="data row0 col6" >0.233859</td>
+      <td id="T_269bb_row0_col7" class="data row0 col7" >0.904716</td>
+      <td id="T_269bb_row0_col8" class="data row0 col8" >0.516821</td>
+      <td id="T_269bb_row0_col9" class="data row0 col9" >1.294533</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_269bb_row1_col0" class="data row1 col0" >Target</td>
+      <td id="T_269bb_row1_col1" class="data row1 col1" >2.171756</td>
+      <td id="T_269bb_row1_col2" class="data row1 col2" >11.571429</td>
+      <td id="T_269bb_row1_col3" class="data row1 col3" >0.804265</td>
+      <td id="T_269bb_row1_col4" class="data row1 col4" >0.545280</td>
+      <td id="T_269bb_row1_col5" class="data row1 col5" >2.178571</td>
+      <td id="T_269bb_row1_col6" class="data row1 col6" >0.227516</td>
+      <td id="T_269bb_row1_col7" class="data row1 col7" >0.858131</td>
+      <td id="T_269bb_row1_col8" class="data row1 col8" >0.333803</td>
+      <td id="T_269bb_row1_col9" class="data row1 col9" >1.371319</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_269bb_row2_col0" class="data row2 col0" >L-1_S0.5</td>
+      <td id="T_269bb_row2_col1" class="data row2 col1" >0.278831</td>
+      <td id="T_269bb_row2_col2" class="data row2 col2" >1.678571</td>
+      <td id="T_269bb_row2_col3" class="data row2 col3" >0.223076</td>
+      <td id="T_269bb_row2_col4" class="data row2 col4" >0.383548</td>
+      <td id="T_269bb_row2_col5" class="data row2 col5" >2.107143</td>
+      <td id="T_269bb_row2_col6" class="data row2 col6" >0.138988</td>
+      <td id="T_269bb_row2_col7" class="data row2 col7" >0.798550</td>
+      <td id="T_269bb_row2_col8" class="data row2 col8" >0.248597</td>
+      <td id="T_269bb_row2_col9" class="data row2 col9" >1.428691</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_269bb_row3_col0" class="data row3 col0" >L-1_S1.0</td>
+      <td id="T_269bb_row3_col1" class="data row3 col1" >0.920757</td>
+      <td id="T_269bb_row3_col2" class="data row3 col2" >3.000000</td>
+      <td id="T_269bb_row3_col3" class="data row3 col3" >0.923340</td>
+      <td id="T_269bb_row3_col4" class="data row3 col4" >0.860176</td>
+      <td id="T_269bb_row3_col5" class="data row3 col5" >3.357143</td>
+      <td id="T_269bb_row3_col6" class="data row3 col6" >0.556460</td>
+      <td id="T_269bb_row3_col7" class="data row3 col7" >0.837263</td>
+      <td id="T_269bb_row3_col8" class="data row3 col8" >0.276033</td>
+      <td id="T_269bb_row3_col9" class="data row3 col9" >1.454095</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_269bb_row4_col0" class="data row4 col0" >L0_S0.5</td>
+      <td id="T_269bb_row4_col1" class="data row4 col1" >1.233966</td>
+      <td id="T_269bb_row4_col2" class="data row4 col2" >4.750000</td>
+      <td id="T_269bb_row4_col3" class="data row4 col3" >0.833444</td>
+      <td id="T_269bb_row4_col4" class="data row4 col4" >0.796760</td>
+      <td id="T_269bb_row4_col5" class="data row4 col5" >2.857143</td>
+      <td id="T_269bb_row4_col6" class="data row4 col6" >0.235893</td>
+      <td id="T_269bb_row4_col7" class="data row4 col7" >0.922858</td>
+      <td id="T_269bb_row4_col8" class="data row4 col8" >0.503957</td>
+      <td id="T_269bb_row4_col9" class="data row4 col9" >1.301915</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_269bb_row5_col0" class="data row5 col0" >L0_S1.0</td>
+      <td id="T_269bb_row5_col1" class="data row5 col1" >0.431388</td>
+      <td id="T_269bb_row5_col2" class="data row5 col2" >2.107143</td>
+      <td id="T_269bb_row5_col3" class="data row5 col3" >0.375861</td>
+      <td id="T_269bb_row5_col4" class="data row5 col4" >0.491653</td>
+      <td id="T_269bb_row5_col5" class="data row5 col5" >2.214286</td>
+      <td id="T_269bb_row5_col6" class="data row5 col6" >0.226762</td>
+      <td id="T_269bb_row5_col7" class="data row5 col7" >0.820531</td>
+      <td id="T_269bb_row5_col8" class="data row5 col8" >0.392390</td>
+      <td id="T_269bb_row5_col9" class="data row5 col9" >1.397158</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_269bb_row6_col0" class="data row6 col0" >L4_S0.5</td>
+      <td id="T_269bb_row6_col1" class="data row6 col1" >1.130787</td>
+      <td id="T_269bb_row6_col2" class="data row6 col2" >3.892857</td>
+      <td id="T_269bb_row6_col3" class="data row6 col3" >0.883260</td>
+      <td id="T_269bb_row6_col4" class="data row6 col4" >0.517909</td>
+      <td id="T_269bb_row6_col5" class="data row6 col5" >2.071429</td>
+      <td id="T_269bb_row6_col6" class="data row6 col6" >0.187672</td>
+      <td id="T_269bb_row6_col7" class="data row6 col7" >0.929716</td>
+      <td id="T_269bb_row6_col8" class="data row6 col8" >0.509422</td>
+      <td id="T_269bb_row6_col9" class="data row6 col9" >1.296717</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_269bb_row7_col0" class="data row7 col0" >L4_S1.0</td>
+      <td id="T_269bb_row7_col1" class="data row7 col1" >0.189388</td>
+      <td id="T_269bb_row7_col2" class="data row7 col2" >1.428571</td>
+      <td id="T_269bb_row7_col3" class="data row7 col3" >0.147090</td>
+      <td id="T_269bb_row7_col4" class="data row7 col4" >0.267108</td>
+      <td id="T_269bb_row7_col5" class="data row7 col5" >1.571429</td>
+      <td id="T_269bb_row7_col6" class="data row7 col6" >0.095981</td>
+      <td id="T_269bb_row7_col7" class="data row7 col7" >0.832733</td>
+      <td id="T_269bb_row7_col8" class="data row7 col8" >0.413169</td>
+      <td id="T_269bb_row7_col9" class="data row7 col9" >1.382650</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row8" class="row_heading level0 row8" >8</th>
+      <td id="T_269bb_row8_col0" class="data row8 col0" >L6_S0.5</td>
+      <td id="T_269bb_row8_col1" class="data row8 col1" >1.058736</td>
+      <td id="T_269bb_row8_col2" class="data row8 col2" >3.750000</td>
+      <td id="T_269bb_row8_col3" class="data row8 col3" >0.838678</td>
+      <td id="T_269bb_row8_col4" class="data row8 col4" >0.588298</td>
+      <td id="T_269bb_row8_col5" class="data row8 col5" >2.321429</td>
+      <td id="T_269bb_row8_col6" class="data row8 col6" >0.206700</td>
+      <td id="T_269bb_row8_col7" class="data row8 col7" >0.931503</td>
+      <td id="T_269bb_row8_col8" class="data row8 col8" >0.508216</td>
+      <td id="T_269bb_row8_col9" class="data row8 col9" >1.297088</td>
+    </tr>
+    <tr>
+      <th id="T_269bb_level0_row9" class="row_heading level0 row9" >9</th>
+      <td id="T_269bb_row9_col0" class="data row9 col0" >L6_S1.0</td>
+      <td id="T_269bb_row9_col1" class="data row9 col1" >0.425308</td>
+      <td id="T_269bb_row9_col2" class="data row9 col2" >1.964286</td>
+      <td id="T_269bb_row9_col3" class="data row9 col3" >0.322566</td>
+      <td id="T_269bb_row9_col4" class="data row9 col4" >0.480126</td>
+      <td id="T_269bb_row9_col5" class="data row9 col5" >2.214286</td>
+      <td id="T_269bb_row9_col6" class="data row9 col6" >0.245594</td>
+      <td id="T_269bb_row9_col7" class="data row9 col7" >0.805691</td>
+      <td id="T_269bb_row9_col8" class="data row9 col8" >0.376051</td>
+      <td id="T_269bb_row9_col9" class="data row9 col9" >1.401531</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_ff3e7_row1_col3, #T_ff3e7_row1_col8, #T_ff3e7_row2_col1, #T_ff3e7_row2_col2, #T_ff3e7_row2_col6, #T_ff3e7_row4_col4, #T_ff3e7_row4_col5, #T_ff3e7_row5_col7, #T_ff3e7_row5_col9 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_ff3e7">
+  <caption><h3>Setup: global_vector — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_ff3e7_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_ff3e7_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_ff3e7_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_ff3e7_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_ff3e7_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_ff3e7_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_ff3e7_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_ff3e7_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_ff3e7_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_ff3e7_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_ff3e7_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_ff3e7_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_ff3e7_row0_col1" class="data row0 col1" >1.892925</td>
+      <td id="T_ff3e7_row0_col2" class="data row0 col2" >9.892857</td>
+      <td id="T_ff3e7_row0_col3" class="data row0 col3" >0.609468</td>
+      <td id="T_ff3e7_row0_col4" class="data row0 col4" >0.488883</td>
+      <td id="T_ff3e7_row0_col5" class="data row0 col5" >1.428571</td>
+      <td id="T_ff3e7_row0_col6" class="data row0 col6" >0.185116</td>
+      <td id="T_ff3e7_row0_col7" class="data row0 col7" >0.129325</td>
+      <td id="T_ff3e7_row0_col8" class="data row0 col8" >0.166578</td>
+      <td id="T_ff3e7_row0_col9" class="data row0 col9" >0.103380</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_ff3e7_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_ff3e7_row1_col1" class="data row1 col1" >1.280851</td>
+      <td id="T_ff3e7_row1_col2" class="data row1 col2" >8.642857</td>
+      <td id="T_ff3e7_row1_col3" class="data row1 col3" >0.184792</td>
+      <td id="T_ff3e7_row1_col4" class="data row1 col4" >0.361162</td>
+      <td id="T_ff3e7_row1_col5" class="data row1 col5" >1.321429</td>
+      <td id="T_ff3e7_row1_col6" class="data row1 col6" >0.328945</td>
+      <td id="T_ff3e7_row1_col7" class="data row1 col7" >0.099989</td>
+      <td id="T_ff3e7_row1_col8" class="data row1 col8" >0.110759</td>
+      <td id="T_ff3e7_row1_col9" class="data row1 col9" >0.108521</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_ff3e7_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_ff3e7_row2_col1" class="data row2 col1" >1.006499</td>
+      <td id="T_ff3e7_row2_col2" class="data row2 col2" >7.178571</td>
+      <td id="T_ff3e7_row2_col3" class="data row2 col3" >0.268012</td>
+      <td id="T_ff3e7_row2_col4" class="data row2 col4" >0.379144</td>
+      <td id="T_ff3e7_row2_col5" class="data row2 col5" >1.035714</td>
+      <td id="T_ff3e7_row2_col6" class="data row2 col6" >0.179946</td>
+      <td id="T_ff3e7_row2_col7" class="data row2 col7" >0.113020</td>
+      <td id="T_ff3e7_row2_col8" class="data row2 col8" >0.185042</td>
+      <td id="T_ff3e7_row2_col9" class="data row2 col9" >0.108962</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_ff3e7_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_ff3e7_row3_col1" class="data row3 col1" >1.740368</td>
+      <td id="T_ff3e7_row3_col2" class="data row3 col2" >9.464286</td>
+      <td id="T_ff3e7_row3_col3" class="data row3 col3" >0.488920</td>
+      <td id="T_ff3e7_row3_col4" class="data row3 col4" >0.464117</td>
+      <td id="T_ff3e7_row3_col5" class="data row3 col5" >1.107143</td>
+      <td id="T_ff3e7_row3_col6" class="data row3 col6" >0.222000</td>
+      <td id="T_ff3e7_row3_col7" class="data row3 col7" >0.122203</td>
+      <td id="T_ff3e7_row3_col8" class="data row3 col8" >0.143474</td>
+      <td id="T_ff3e7_row3_col9" class="data row3 col9" >0.108337</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_ff3e7_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_ff3e7_row4_col1" class="data row4 col1" >1.095629</td>
+      <td id="T_ff3e7_row4_col2" class="data row4 col2" >7.821429</td>
+      <td id="T_ff3e7_row4_col3" class="data row4 col3" >0.247450</td>
+      <td id="T_ff3e7_row4_col4" class="data row4 col4" >0.359414</td>
+      <td id="T_ff3e7_row4_col5" class="data row4 col5" >0.750000</td>
+      <td id="T_ff3e7_row4_col6" class="data row4 col6" >0.187655</td>
+      <td id="T_ff3e7_row4_col7" class="data row4 col7" >0.104154</td>
+      <td id="T_ff3e7_row4_col8" class="data row4 col8" >0.187447</td>
+      <td id="T_ff3e7_row4_col9" class="data row4 col9" >0.112494</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_ff3e7_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_ff3e7_row5_col1" class="data row5 col1" >1.982368</td>
+      <td id="T_ff3e7_row5_col2" class="data row5 col2" >10.142857</td>
+      <td id="T_ff3e7_row5_col3" class="data row5 col3" >0.657175</td>
+      <td id="T_ff3e7_row5_col4" class="data row5 col4" >0.547787</td>
+      <td id="T_ff3e7_row5_col5" class="data row5 col5" >1.178571</td>
+      <td id="T_ff3e7_row5_col6" class="data row5 col6" >0.222758</td>
+      <td id="T_ff3e7_row5_col7" class="data row5 col7" >0.099870</td>
+      <td id="T_ff3e7_row5_col8" class="data row5 col8" >0.137752</td>
+      <td id="T_ff3e7_row5_col9" class="data row5 col9" >0.086281</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_ff3e7_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_ff3e7_row6_col1" class="data row6 col1" >1.169249</td>
+      <td id="T_ff3e7_row6_col2" class="data row6 col2" >7.964286</td>
+      <td id="T_ff3e7_row6_col3" class="data row6 col3" >0.247358</td>
+      <td id="T_ff3e7_row6_col4" class="data row6 col4" >0.388541</td>
+      <td id="T_ff3e7_row6_col5" class="data row6 col5" >1.071429</td>
+      <td id="T_ff3e7_row6_col6" class="data row6 col6" >0.190790</td>
+      <td id="T_ff3e7_row6_col7" class="data row6 col7" >0.106765</td>
+      <td id="T_ff3e7_row6_col8" class="data row6 col8" >0.192250</td>
+      <td id="T_ff3e7_row6_col9" class="data row6 col9" >0.111055</td>
+    </tr>
+    <tr>
+      <th id="T_ff3e7_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_ff3e7_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_ff3e7_row7_col1" class="data row7 col1" >1.746448</td>
+      <td id="T_ff3e7_row7_col2" class="data row7 col2" >9.607143</td>
+      <td id="T_ff3e7_row7_col3" class="data row7 col3" >0.509739</td>
+      <td id="T_ff3e7_row7_col4" class="data row7 col4" >0.518016</td>
+      <td id="T_ff3e7_row7_col5" class="data row7 col5" >1.250000</td>
+      <td id="T_ff3e7_row7_col6" class="data row7 col6" >0.248280</td>
+      <td id="T_ff3e7_row7_col7" class="data row7 col7" >0.115768</td>
+      <td id="T_ff3e7_row7_col8" class="data row7 col8" >0.133640</td>
+      <td id="T_ff3e7_row7_col9" class="data row7 col9" >0.100447</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_27fb6_row0_col6, #T_27fb6_row1_col8, #T_27fb6_row2_col1, #T_27fb6_row2_col2, #T_27fb6_row2_col4, #T_27fb6_row3_col3, #T_27fb6_row4_col5, #T_27fb6_row5_col7, #T_27fb6_row5_col9 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_27fb6">
+  <caption><h3>Setup: global_vector — Mean Relative Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_27fb6_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_27fb6_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_27fb6_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_27fb6_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_27fb6_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_27fb6_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_27fb6_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_27fb6_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_27fb6_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_27fb6_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_27fb6_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_27fb6_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_27fb6_row0_col1" class="data row0 col1" >0.867056</td>
+      <td id="T_27fb6_row0_col2" class="data row0 col2" >0.803258</td>
+      <td id="T_27fb6_row0_col3" class="data row0 col3" >0.781652</td>
+      <td id="T_27fb6_row0_col4" class="data row0 col4" >0.828357</td>
+      <td id="T_27fb6_row0_col5" class="data row0 col5" >0.702381</td>
+      <td id="T_27fb6_row0_col6" class="data row0 col6" >0.784835</td>
+      <td id="T_27fb6_row0_col7" class="data row0 col7" >0.150429</td>
+      <td id="T_27fb6_row0_col8" class="data row0 col8" >0.507539</td>
+      <td id="T_27fb6_row0_col9" class="data row0 col9" >0.078596</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_27fb6_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_27fb6_row1_col1" class="data row1 col1" >0.553814</td>
+      <td id="T_27fb6_row1_col2" class="data row1 col2" >0.670827</td>
+      <td id="T_27fb6_row1_col3" class="data row1 col3" >0.634685</td>
+      <td id="T_27fb6_row1_col4" class="data row1 col4" >0.453652</td>
+      <td id="T_27fb6_row1_col5" class="data row1 col5" >0.830357</td>
+      <td id="T_27fb6_row1_col6" class="data row1 col6" >2.061079</td>
+      <td id="T_27fb6_row1_col7" class="data row1 col7" >0.119303</td>
+      <td id="T_27fb6_row1_col8" class="data row1 col8" >0.334988</td>
+      <td id="T_27fb6_row1_col9" class="data row1 col9" >0.082202</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_27fb6_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_27fb6_row2_col1" class="data row2 col1" >0.453875</td>
+      <td id="T_27fb6_row2_col2" class="data row2 col2" >0.592596</td>
+      <td id="T_27fb6_row2_col3" class="data row2 col3" >0.669095</td>
+      <td id="T_27fb6_row2_col4" class="data row2 col4" >0.429067</td>
+      <td id="T_27fb6_row2_col5" class="data row2 col5" >0.663690</td>
+      <td id="T_27fb6_row2_col6" class="data row2 col6" >0.894480</td>
+      <td id="T_27fb6_row2_col7" class="data row2 col7" >0.139131</td>
+      <td id="T_27fb6_row2_col8" class="data row2 col8" >0.712579</td>
+      <td id="T_27fb6_row2_col9" class="data row2 col9" >0.078233</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_27fb6_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_27fb6_row3_col1" class="data row3 col1" >0.824821</td>
+      <td id="T_27fb6_row3_col2" class="data row3 col2" >0.798169</td>
+      <td id="T_27fb6_row3_col3" class="data row3 col3" >0.629907</td>
+      <td id="T_27fb6_row3_col4" class="data row3 col4" >0.741413</td>
+      <td id="T_27fb6_row3_col5" class="data row3 col5" >0.547619</td>
+      <td id="T_27fb6_row3_col6" class="data row3 col6" >1.580458</td>
+      <td id="T_27fb6_row3_col7" class="data row3 col7" >0.144734</td>
+      <td id="T_27fb6_row3_col8" class="data row3 col8" >0.521648</td>
+      <td id="T_27fb6_row3_col9" class="data row3 col9" >0.081032</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_27fb6_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_27fb6_row4_col1" class="data row4 col1" >0.487890</td>
+      <td id="T_27fb6_row4_col2" class="data row4 col2" >0.617187</td>
+      <td id="T_27fb6_row4_col3" class="data row4 col3" >0.643799</td>
+      <td id="T_27fb6_row4_col4" class="data row4 col4" >0.439995</td>
+      <td id="T_27fb6_row4_col5" class="data row4 col5" >0.419643</td>
+      <td id="T_27fb6_row4_col6" class="data row4 col6" >0.953007</td>
+      <td id="T_27fb6_row4_col7" class="data row4 col7" >0.130587</td>
+      <td id="T_27fb6_row4_col8" class="data row4 col8" >0.725492</td>
+      <td id="T_27fb6_row4_col9" class="data row4 col9" >0.080505</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_27fb6_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_27fb6_row5_col1" class="data row5 col1" >0.917734</td>
+      <td id="T_27fb6_row5_col2" class="data row5 col2" >0.843848</td>
+      <td id="T_27fb6_row5_col3" class="data row5 col3" >0.831276</td>
+      <td id="T_27fb6_row5_col4" class="data row5 col4" >0.894504</td>
+      <td id="T_27fb6_row5_col5" class="data row5 col5" >0.559524</td>
+      <td id="T_27fb6_row5_col6" class="data row5 col6" >1.025010</td>
+      <td id="T_27fb6_row5_col7" class="data row5 col7" >0.117788</td>
+      <td id="T_27fb6_row5_col8" class="data row5 col8" >0.497739</td>
+      <td id="T_27fb6_row5_col9" class="data row5 col9" >0.064159</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_27fb6_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_27fb6_row6_col1" class="data row6 col1" >0.523752</td>
+      <td id="T_27fb6_row6_col2" class="data row6 col2" >0.635616</td>
+      <td id="T_27fb6_row6_col3" class="data row6 col3" >0.652528</td>
+      <td id="T_27fb6_row6_col4" class="data row6 col4" >0.440618</td>
+      <td id="T_27fb6_row6_col5" class="data row6 col5" >0.622024</td>
+      <td id="T_27fb6_row6_col6" class="data row6 col6" >0.946375</td>
+      <td id="T_27fb6_row6_col7" class="data row6 col7" >0.133648</td>
+      <td id="T_27fb6_row6_col8" class="data row6 col8" >0.748634</td>
+      <td id="T_27fb6_row6_col9" class="data row6 col9" >0.079860</td>
+    </tr>
+    <tr>
+      <th id="T_27fb6_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_27fb6_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_27fb6_row7_col1" class="data row7 col1" >0.794177</td>
+      <td id="T_27fb6_row7_col2" class="data row7 col2" >0.773564</td>
+      <td id="T_27fb6_row7_col3" class="data row7 col3" >0.649776</td>
+      <td id="T_27fb6_row7_col4" class="data row7 col4" >0.840951</td>
+      <td id="T_27fb6_row7_col5" class="data row7 col5" >0.642857</td>
+      <td id="T_27fb6_row7_col6" class="data row7 col6" >1.391108</td>
+      <td id="T_27fb6_row7_col7" class="data row7 col7" >0.133595</td>
+      <td id="T_27fb6_row7_col8" class="data row7 col8" >0.483755</td>
+      <td id="T_27fb6_row7_col9" class="data row7 col9" >0.075117</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_21b7f_row1_col6, #T_21b7f_row4_col3, #T_21b7f_row6_col4, #T_21b7f_row8_col1, #T_21b7f_row8_col2, #T_21b7f_row8_col5, #T_21b7f_row8_col8, #T_21b7f_row8_col9, #T_21b7f_row9_col7 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_21b7f">
+  <caption><h3>Setup: position_bank — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_21b7f_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_21b7f_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_21b7f_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_21b7f_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_21b7f_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_21b7f_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_21b7f_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_21b7f_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_21b7f_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_21b7f_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_21b7f_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_21b7f_row0_col0" class="data row0 col0" >Ground Truth</td>
+      <td id="T_21b7f_row0_col1" class="data row0 col1" >1.159809</td>
+      <td id="T_21b7f_row0_col2" class="data row0 col2" >4.133333</td>
+      <td id="T_21b7f_row0_col3" class="data row0 col3" >0.890099</td>
+      <td id="T_21b7f_row0_col4" class="data row0 col4" >0.657519</td>
+      <td id="T_21b7f_row0_col5" class="data row0 col5" >2.355556</td>
+      <td id="T_21b7f_row0_col6" class="data row0 col6" >0.233859</td>
+      <td id="T_21b7f_row0_col7" class="data row0 col7" >0.904716</td>
+      <td id="T_21b7f_row0_col8" class="data row0 col8" >0.516821</td>
+      <td id="T_21b7f_row0_col9" class="data row0 col9" >1.294533</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_21b7f_row1_col0" class="data row1 col0" >Target</td>
+      <td id="T_21b7f_row1_col1" class="data row1 col1" >2.171756</td>
+      <td id="T_21b7f_row1_col2" class="data row1 col2" >11.571429</td>
+      <td id="T_21b7f_row1_col3" class="data row1 col3" >0.804265</td>
+      <td id="T_21b7f_row1_col4" class="data row1 col4" >0.545280</td>
+      <td id="T_21b7f_row1_col5" class="data row1 col5" >2.178571</td>
+      <td id="T_21b7f_row1_col6" class="data row1 col6" >0.227516</td>
+      <td id="T_21b7f_row1_col7" class="data row1 col7" >0.858131</td>
+      <td id="T_21b7f_row1_col8" class="data row1 col8" >0.333803</td>
+      <td id="T_21b7f_row1_col9" class="data row1 col9" >1.371319</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_21b7f_row2_col0" class="data row2 col0" >L-1_S0.5</td>
+      <td id="T_21b7f_row2_col1" class="data row2 col1" >2.434033</td>
+      <td id="T_21b7f_row2_col2" class="data row2 col2" >16.535714</td>
+      <td id="T_21b7f_row2_col3" class="data row2 col3" >0.855543</td>
+      <td id="T_21b7f_row2_col4" class="data row2 col4" >0.905450</td>
+      <td id="T_21b7f_row2_col5" class="data row2 col5" >3.285714</td>
+      <td id="T_21b7f_row2_col6" class="data row2 col6" >0.524340</td>
+      <td id="T_21b7f_row2_col7" class="data row2 col7" >0.875273</td>
+      <td id="T_21b7f_row2_col8" class="data row2 col8" >0.385677</td>
+      <td id="T_21b7f_row2_col9" class="data row2 col9" >1.356646</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_21b7f_row3_col0" class="data row3 col0" >L-1_S1.0</td>
+      <td id="T_21b7f_row3_col1" class="data row3 col1" >2.802599</td>
+      <td id="T_21b7f_row3_col2" class="data row3 col2" >21.178571</td>
+      <td id="T_21b7f_row3_col3" class="data row3 col3" >0.883831</td>
+      <td id="T_21b7f_row3_col4" class="data row3 col4" >0.764432</td>
+      <td id="T_21b7f_row3_col5" class="data row3 col5" >3.107143</td>
+      <td id="T_21b7f_row3_col6" class="data row3 col6" >0.579822</td>
+      <td id="T_21b7f_row3_col7" class="data row3 col7" >0.801991</td>
+      <td id="T_21b7f_row3_col8" class="data row3 col8" >0.276847</td>
+      <td id="T_21b7f_row3_col9" class="data row3 col9" >1.428815</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_21b7f_row4_col0" class="data row4 col0" >L0_S0.5</td>
+      <td id="T_21b7f_row4_col1" class="data row4 col1" >1.328495</td>
+      <td id="T_21b7f_row4_col2" class="data row4 col2" >5.000000</td>
+      <td id="T_21b7f_row4_col3" class="data row4 col3" >0.894471</td>
+      <td id="T_21b7f_row4_col4" class="data row4 col4" >0.716249</td>
+      <td id="T_21b7f_row4_col5" class="data row4 col5" >2.714286</td>
+      <td id="T_21b7f_row4_col6" class="data row4 col6" >0.226832</td>
+      <td id="T_21b7f_row4_col7" class="data row4 col7" >0.914802</td>
+      <td id="T_21b7f_row4_col8" class="data row4 col8" >0.508579</td>
+      <td id="T_21b7f_row4_col9" class="data row4 col9" >1.295796</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_21b7f_row5_col0" class="data row5 col0" >L0_S1.0</td>
+      <td id="T_21b7f_row5_col1" class="data row5 col1" >1.365636</td>
+      <td id="T_21b7f_row5_col2" class="data row5 col2" >5.464286</td>
+      <td id="T_21b7f_row5_col3" class="data row5 col3" >0.876356</td>
+      <td id="T_21b7f_row5_col4" class="data row5 col4" >0.846895</td>
+      <td id="T_21b7f_row5_col5" class="data row5 col5" >2.892857</td>
+      <td id="T_21b7f_row5_col6" class="data row5 col6" >0.266195</td>
+      <td id="T_21b7f_row5_col7" class="data row5 col7" >0.917889</td>
+      <td id="T_21b7f_row5_col8" class="data row5 col8" >0.510548</td>
+      <td id="T_21b7f_row5_col9" class="data row5 col9" >1.293270</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_21b7f_row6_col0" class="data row6 col0" >L4_S0.5</td>
+      <td id="T_21b7f_row6_col1" class="data row6 col1" >1.293064</td>
+      <td id="T_21b7f_row6_col2" class="data row6 col2" >4.821429</td>
+      <td id="T_21b7f_row6_col3" class="data row6 col3" >0.928255</td>
+      <td id="T_21b7f_row6_col4" class="data row6 col4" >0.659142</td>
+      <td id="T_21b7f_row6_col5" class="data row6 col5" >2.607143</td>
+      <td id="T_21b7f_row6_col6" class="data row6 col6" >0.217689</td>
+      <td id="T_21b7f_row6_col7" class="data row6 col7" >0.918784</td>
+      <td id="T_21b7f_row6_col8" class="data row6 col8" >0.508886</td>
+      <td id="T_21b7f_row6_col9" class="data row6 col9" >1.297514</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_21b7f_row7_col0" class="data row7 col0" >L4_S1.0</td>
+      <td id="T_21b7f_row7_col1" class="data row7 col1" >1.422047</td>
+      <td id="T_21b7f_row7_col2" class="data row7 col2" >5.964286</td>
+      <td id="T_21b7f_row7_col3" class="data row7 col3" >0.878484</td>
+      <td id="T_21b7f_row7_col4" class="data row7 col4" >0.936855</td>
+      <td id="T_21b7f_row7_col5" class="data row7 col5" >3.035714</td>
+      <td id="T_21b7f_row7_col6" class="data row7 col6" >0.296883</td>
+      <td id="T_21b7f_row7_col7" class="data row7 col7" >0.913813</td>
+      <td id="T_21b7f_row7_col8" class="data row7 col8" >0.500065</td>
+      <td id="T_21b7f_row7_col9" class="data row7 col9" >1.298531</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row8" class="row_heading level0 row8" >8</th>
+      <td id="T_21b7f_row8_col0" class="data row8 col0" >L6_S0.5</td>
+      <td id="T_21b7f_row8_col1" class="data row8 col1" >1.258382</td>
+      <td id="T_21b7f_row8_col2" class="data row8 col2" >4.750000</td>
+      <td id="T_21b7f_row8_col3" class="data row8 col3" >0.923073</td>
+      <td id="T_21b7f_row8_col4" class="data row8 col4" >0.678684</td>
+      <td id="T_21b7f_row8_col5" class="data row8 col5" >2.392857</td>
+      <td id="T_21b7f_row8_col6" class="data row8 col6" >0.242924</td>
+      <td id="T_21b7f_row8_col7" class="data row8 col7" >0.919014</td>
+      <td id="T_21b7f_row8_col8" class="data row8 col8" >0.511263</td>
+      <td id="T_21b7f_row8_col9" class="data row8 col9" >1.295539</td>
+    </tr>
+    <tr>
+      <th id="T_21b7f_level0_row9" class="row_heading level0 row9" >9</th>
+      <td id="T_21b7f_row9_col0" class="data row9 col0" >L6_S1.0</td>
+      <td id="T_21b7f_row9_col1" class="data row9 col1" >1.787179</td>
+      <td id="T_21b7f_row9_col2" class="data row9 col2" >9.607143</td>
+      <td id="T_21b7f_row9_col3" class="data row9 col3" >0.882685</td>
+      <td id="T_21b7f_row9_col4" class="data row9 col4" >0.895684</td>
+      <td id="T_21b7f_row9_col5" class="data row9 col5" >3.035714</td>
+      <td id="T_21b7f_row9_col6" class="data row9 col6" >0.376183</td>
+      <td id="T_21b7f_row9_col7" class="data row9 col7" >0.901236</td>
+      <td id="T_21b7f_row9_col8" class="data row9 col8" >0.463169</td>
+      <td id="T_21b7f_row9_col9" class="data row9 col9" >1.316478</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_dd19b_row0_col1, #T_dd19b_row0_col7, #T_dd19b_row1_col3, #T_dd19b_row1_col4, #T_dd19b_row1_col8, #T_dd19b_row1_col9, #T_dd19b_row6_col5, #T_dd19b_row6_col6, #T_dd19b_row7_col2 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_dd19b">
+  <caption><h3>Setup: position_bank — Mean Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_dd19b_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_dd19b_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_dd19b_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_dd19b_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_dd19b_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_dd19b_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_dd19b_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_dd19b_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_dd19b_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_dd19b_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_dd19b_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_dd19b_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_dd19b_row0_col1" class="data row0 col1" >0.478194</td>
+      <td id="T_dd19b_row0_col2" class="data row0 col2" >6.250000</td>
+      <td id="T_dd19b_row0_col3" class="data row0 col3" >0.162930</td>
+      <td id="T_dd19b_row0_col4" class="data row0 col4" >0.369710</td>
+      <td id="T_dd19b_row0_col5" class="data row0 col5" >1.250000</td>
+      <td id="T_dd19b_row0_col6" class="data row0 col6" >0.312884</td>
+      <td id="T_dd19b_row0_col7" class="data row0 col7" >0.084606</td>
+      <td id="T_dd19b_row0_col8" class="data row0 col8" >0.113326</td>
+      <td id="T_dd19b_row0_col9" class="data row0 col9" >0.089187</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_dd19b_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_dd19b_row1_col1" class="data row1 col1" >0.670846</td>
+      <td id="T_dd19b_row1_col2" class="data row1 col2" >9.892857</td>
+      <td id="T_dd19b_row1_col3" class="data row1 col3" >0.154264</td>
+      <td id="T_dd19b_row1_col4" class="data row1 col4" >0.309764</td>
+      <td id="T_dd19b_row1_col5" class="data row1 col5" >1.142857</td>
+      <td id="T_dd19b_row1_col6" class="data row1 col6" >0.356885</td>
+      <td id="T_dd19b_row1_col7" class="data row1 col7" >0.099594</td>
+      <td id="T_dd19b_row1_col8" class="data row1 col8" >0.094240</td>
+      <td id="T_dd19b_row1_col9" class="data row1 col9" >0.079364</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_dd19b_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_dd19b_row2_col1" class="data row2 col1" >0.916402</td>
+      <td id="T_dd19b_row2_col2" class="data row2 col2" >6.928571</td>
+      <td id="T_dd19b_row2_col3" class="data row2 col3" >0.216374</td>
+      <td id="T_dd19b_row2_col4" class="data row2 col4" >0.384125</td>
+      <td id="T_dd19b_row2_col5" class="data row2 col5" >0.892857</td>
+      <td id="T_dd19b_row2_col6" class="data row2 col6" >0.184078</td>
+      <td id="T_dd19b_row2_col7" class="data row2 col7" >0.105928</td>
+      <td id="T_dd19b_row2_col8" class="data row2 col8" >0.184482</td>
+      <td id="T_dd19b_row2_col9" class="data row2 col9" >0.112715</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_dd19b_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_dd19b_row3_col1" class="data row3 col1" >0.878305</td>
+      <td id="T_dd19b_row3_col2" class="data row3 col2" >6.464286</td>
+      <td id="T_dd19b_row3_col3" class="data row3 col3" >0.225659</td>
+      <td id="T_dd19b_row3_col4" class="data row3 col4" >0.455683</td>
+      <td id="T_dd19b_row3_col5" class="data row3 col5" >1.142857</td>
+      <td id="T_dd19b_row3_col6" class="data row3 col6" >0.191814</td>
+      <td id="T_dd19b_row3_col7" class="data row3 col7" >0.107211</td>
+      <td id="T_dd19b_row3_col8" class="data row3 col8" >0.186038</td>
+      <td id="T_dd19b_row3_col9" class="data row3 col9" >0.112310</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_dd19b_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_dd19b_row4_col1" class="data row4 col1" >0.957195</td>
+      <td id="T_dd19b_row4_col2" class="data row4 col2" >7.107143</td>
+      <td id="T_dd19b_row4_col3" class="data row4 col3" >0.238706</td>
+      <td id="T_dd19b_row4_col4" class="data row4 col4" >0.359045</td>
+      <td id="T_dd19b_row4_col5" class="data row4 col5" >0.928571</td>
+      <td id="T_dd19b_row4_col6" class="data row4 col6" >0.179166</td>
+      <td id="T_dd19b_row4_col7" class="data row4 col7" >0.099842</td>
+      <td id="T_dd19b_row4_col8" class="data row4 col8" >0.194240</td>
+      <td id="T_dd19b_row4_col9" class="data row4 col9" >0.115021</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_dd19b_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_dd19b_row5_col1" class="data row5 col1" >0.849855</td>
+      <td id="T_dd19b_row5_col2" class="data row5 col2" >6.107143</td>
+      <td id="T_dd19b_row5_col3" class="data row5 col3" >0.208377</td>
+      <td id="T_dd19b_row5_col4" class="data row5 col4" >0.484109</td>
+      <td id="T_dd19b_row5_col5" class="data row5 col5" >1.142857</td>
+      <td id="T_dd19b_row5_col6" class="data row5 col6" >0.195070</td>
+      <td id="T_dd19b_row5_col7" class="data row5 col7" >0.094117</td>
+      <td id="T_dd19b_row5_col8" class="data row5 col8" >0.178545</td>
+      <td id="T_dd19b_row5_col9" class="data row5 col9" >0.109939</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_dd19b_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_dd19b_row6_col1" class="data row6 col1" >0.974166</td>
+      <td id="T_dd19b_row6_col2" class="data row6 col2" >6.964286</td>
+      <td id="T_dd19b_row6_col3" class="data row6 col3" >0.243564</td>
+      <td id="T_dd19b_row6_col4" class="data row6 col4" >0.353748</td>
+      <td id="T_dd19b_row6_col5" class="data row6 col5" >0.857143</td>
+      <td id="T_dd19b_row6_col6" class="data row6 col6" >0.173345</td>
+      <td id="T_dd19b_row6_col7" class="data row6 col7" >0.093825</td>
+      <td id="T_dd19b_row6_col8" class="data row6 col8" >0.187344</td>
+      <td id="T_dd19b_row6_col9" class="data row6 col9" >0.108486</td>
+    </tr>
+    <tr>
+      <th id="T_dd19b_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_dd19b_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_dd19b_row7_col1" class="data row7 col1" >0.625566</td>
+      <td id="T_dd19b_row7_col2" class="data row7 col2" >5.107143</td>
+      <td id="T_dd19b_row7_col3" class="data row7 col3" >0.193240</td>
+      <td id="T_dd19b_row7_col4" class="data row7 col4" >0.439502</td>
+      <td id="T_dd19b_row7_col5" class="data row7 col5" >1.142857</td>
+      <td id="T_dd19b_row7_col6" class="data row7 col6" >0.213364</td>
+      <td id="T_dd19b_row7_col7" class="data row7 col7" >0.096870</td>
+      <td id="T_dd19b_row7_col8" class="data row7 col8" >0.158354</td>
+      <td id="T_dd19b_row7_col9" class="data row7 col9" >0.097242</td>
+    </tr>
+  </tbody>
+</table>
+<style type="text/css">
+#T_dcc47_row0_col7, #T_dcc47_row1_col8, #T_dcc47_row1_col9, #T_dcc47_row2_col5, #T_dcc47_row5_col2, #T_dcc47_row5_col3, #T_dcc47_row6_col4, #T_dcc47_row6_col6, #T_dcc47_row7_col1 {
+  background-color: lightgreen;
+}
+</style>
+<table id="T_dcc47">
+  <caption><h3>Setup: position_bank — Mean Relative Absolute Error</h3></caption>
+  <thead>
+    <tr>
+      <th class="blank level0" >&nbsp;</th>
+      <th id="T_dcc47_level0_col0" class="col_heading level0 col0" >Instance</th>
+      <th id="T_dcc47_level0_col1" class="col_heading level0 col1" >CHE</th>
+      <th id="T_dcc47_level0_col2" class="col_heading level0 col2" >CC</th>
+      <th id="T_dcc47_level0_col3" class="col_heading level0 col3" >CTD</th>
+      <th id="T_dcc47_level0_col4" class="col_heading level0 col4" >HRHE_i</th>
+      <th id="T_dcc47_level0_col5" class="col_heading level0 col5" >HRC_i</th>
+      <th id="T_dcc47_level0_col6" class="col_heading level0 col6" >CBS</th>
+      <th id="T_dcc47_level0_col7" class="col_heading level0 col7" >CTnCTR</th>
+      <th id="T_dcc47_level0_col8" class="col_heading level0 col8" >PCS</th>
+      <th id="T_dcc47_level0_col9" class="col_heading level0 col9" >MCTD</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_dcc47_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_dcc47_row0_col0" class="data row0 col0" >L-1_S0.5</td>
+      <td id="T_dcc47_row0_col1" class="data row0 col1" >0.321917</td>
+      <td id="T_dcc47_row0_col2" class="data row0 col2" >0.918933</td>
+      <td id="T_dcc47_row0_col3" class="data row0 col3" >0.567738</td>
+      <td id="T_dcc47_row0_col4" class="data row0 col4" >0.450877</td>
+      <td id="T_dcc47_row0_col5" class="data row0 col5" >0.788690</td>
+      <td id="T_dcc47_row0_col6" class="data row0 col6" >2.112948</td>
+      <td id="T_dcc47_row0_col7" class="data row0 col7" >0.102440</td>
+      <td id="T_dcc47_row0_col8" class="data row0 col8" >0.421688</td>
+      <td id="T_dcc47_row0_col9" class="data row0 col9" >0.065641</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_dcc47_row1_col0" class="data row1 col0" >L-1_S1.0</td>
+      <td id="T_dcc47_row1_col1" class="data row1 col1" >0.480948</td>
+      <td id="T_dcc47_row1_col2" class="data row1 col2" >1.630913</td>
+      <td id="T_dcc47_row1_col3" class="data row1 col3" >0.529375</td>
+      <td id="T_dcc47_row1_col4" class="data row1 col4" >0.377459</td>
+      <td id="T_dcc47_row1_col5" class="data row1 col5" >0.714286</td>
+      <td id="T_dcc47_row1_col6" class="data row1 col6" >2.283250</td>
+      <td id="T_dcc47_row1_col7" class="data row1 col7" >0.114593</td>
+      <td id="T_dcc47_row1_col8" class="data row1 col8" >0.278839</td>
+      <td id="T_dcc47_row1_col9" class="data row1 col9" >0.060093</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_dcc47_row2_col0" class="data row2 col0" >L0_S0.5</td>
+      <td id="T_dcc47_row2_col1" class="data row2 col1" >0.414263</td>
+      <td id="T_dcc47_row2_col2" class="data row2 col2" >0.567726</td>
+      <td id="T_dcc47_row2_col3" class="data row2 col3" >0.630798</td>
+      <td id="T_dcc47_row2_col4" class="data row2 col4" >0.485806</td>
+      <td id="T_dcc47_row2_col5" class="data row2 col5" >0.556548</td>
+      <td id="T_dcc47_row2_col6" class="data row2 col6" >1.077950</td>
+      <td id="T_dcc47_row2_col7" class="data row2 col7" >0.130902</td>
+      <td id="T_dcc47_row2_col8" class="data row2 col8" >0.710803</td>
+      <td id="T_dcc47_row2_col9" class="data row2 col9" >0.080710</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_dcc47_row3_col0" class="data row3 col0" >L0_S1.0</td>
+      <td id="T_dcc47_row3_col1" class="data row3 col1" >0.397993</td>
+      <td id="T_dcc47_row3_col2" class="data row3 col2" >0.531395</td>
+      <td id="T_dcc47_row3_col3" class="data row3 col3" >0.633517</td>
+      <td id="T_dcc47_row3_col4" class="data row3 col4" >0.572394</td>
+      <td id="T_dcc47_row3_col5" class="data row3 col5" >0.696429</td>
+      <td id="T_dcc47_row3_col6" class="data row3 col6" >1.187754</td>
+      <td id="T_dcc47_row3_col7" class="data row3 col7" >0.132333</td>
+      <td id="T_dcc47_row3_col8" class="data row3 col8" >0.718663</td>
+      <td id="T_dcc47_row3_col9" class="data row3 col9" >0.080438</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_dcc47_row4_col0" class="data row4 col0" >L4_S0.5</td>
+      <td id="T_dcc47_row4_col1" class="data row4 col1" >0.432586</td>
+      <td id="T_dcc47_row4_col2" class="data row4 col2" >0.580522</td>
+      <td id="T_dcc47_row4_col3" class="data row4 col3" >0.594915</td>
+      <td id="T_dcc47_row4_col4" class="data row4 col4" >0.428727</td>
+      <td id="T_dcc47_row4_col5" class="data row4 col5" >0.598214</td>
+      <td id="T_dcc47_row4_col6" class="data row4 col6" >1.064693</td>
+      <td id="T_dcc47_row4_col7" class="data row4 col7" >0.123346</td>
+      <td id="T_dcc47_row4_col8" class="data row4 col8" >0.745227</td>
+      <td id="T_dcc47_row4_col9" class="data row4 col9" >0.082770</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_dcc47_row5_col0" class="data row5 col0" >L4_S1.0</td>
+      <td id="T_dcc47_row5_col1" class="data row5 col1" >0.391658</td>
+      <td id="T_dcc47_row5_col2" class="data row5 col2" >0.509371</td>
+      <td id="T_dcc47_row5_col3" class="data row5 col3" >0.521538</td>
+      <td id="T_dcc47_row5_col4" class="data row5 col4" >0.630110</td>
+      <td id="T_dcc47_row5_col5" class="data row5 col5" >0.720238</td>
+      <td id="T_dcc47_row5_col6" class="data row5 col6" >1.296747</td>
+      <td id="T_dcc47_row5_col7" class="data row5 col7" >0.118050</td>
+      <td id="T_dcc47_row5_col8" class="data row5 col8" >0.696329</td>
+      <td id="T_dcc47_row5_col9" class="data row5 col9" >0.078638</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row6" class="row_heading level0 row6" >6</th>
+      <td id="T_dcc47_row6_col0" class="data row6 col0" >L6_S0.5</td>
+      <td id="T_dcc47_row6_col1" class="data row6 col1" >0.439107</td>
+      <td id="T_dcc47_row6_col2" class="data row6 col2" >0.547481</td>
+      <td id="T_dcc47_row6_col3" class="data row6 col3" >0.657241</td>
+      <td id="T_dcc47_row6_col4" class="data row6 col4" >0.357838</td>
+      <td id="T_dcc47_row6_col5" class="data row6 col5" >0.556548</td>
+      <td id="T_dcc47_row6_col6" class="data row6 col6" >0.946255</td>
+      <td id="T_dcc47_row6_col7" class="data row6 col7" >0.117405</td>
+      <td id="T_dcc47_row6_col8" class="data row6 col8" >0.727542</td>
+      <td id="T_dcc47_row6_col9" class="data row6 col9" >0.077675</td>
+    </tr>
+    <tr>
+      <th id="T_dcc47_level0_row7" class="row_heading level0 row7" >7</th>
+      <td id="T_dcc47_row7_col0" class="data row7 col0" >L6_S1.0</td>
+      <td id="T_dcc47_row7_col1" class="data row7 col1" >0.319440</td>
+      <td id="T_dcc47_row7_col2" class="data row7 col2" >0.534247</td>
+      <td id="T_dcc47_row7_col3" class="data row7 col3" >0.524143</td>
+      <td id="T_dcc47_row7_col4" class="data row7 col4" >0.533941</td>
+      <td id="T_dcc47_row7_col5" class="data row7 col5" >0.750000</td>
+      <td id="T_dcc47_row7_col6" class="data row7 col6" >1.418901</td>
+      <td id="T_dcc47_row7_col7" class="data row7 col7" >0.120359</td>
+      <td id="T_dcc47_row7_col8" class="data row7 col8" >0.615555</td>
+      <td id="T_dcc47_row7_col9" class="data row7 col9" >0.069750</td>
+    </tr>
+  </tbody>
+</table>
+
+      </body>
+    </html>
+    

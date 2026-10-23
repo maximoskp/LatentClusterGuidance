@@ -893,6 +893,24 @@ def mae_row_from_pairs(instance_name, pair_records):
         row[metric] = float(np.mean(diffs)) if diffs else np.nan
     return row
 
+def mrae_row_from_pairs(instance_name, pair_records):
+    """
+    Build a row: {"Instance": instance_name, <metric>: mean(|gen - real|)} using
+    per-pair metrics already computed. No recomputation of metrics.
+    """
+    row = {"Instance": instance_name}
+    if not pair_records:
+        return row
+    metric_names = list(pair_records[0]["real"].keys())
+    for metric in metric_names:
+        diffs = []
+        for rec in pair_records:
+            vr = rec["real"].get(metric, np.nan)
+            vg = rec["gen"].get(metric,  np.nan)
+            if np.isfinite(vr) and np.isfinite(vg) and abs(vr) > 1e-6:
+                diffs.append(abs(vg - vr)/abs(vr))
+        row[metric] = float(np.mean(diffs)) if diffs else np.nan
+    return row
 
 def highlight_lowest(series):
     metric_columns = ["CHE", "CC", "CTD", "CTnCTR", "PCS", "MCTD", "HRHE_i", "HRC_i", "CBS"]
@@ -943,12 +961,12 @@ def compute_setup_results(
       - rows_means: first row Ground Truth mean (all real files), then instance means
       - rows_mae:   one row per instance with mean absolute error vs matched ground truth
     """
-    rows_means, rows_mae = [], []
+    rows_means, rows_mae, rows_mrae = [], [], []
     # SOURCE
     source_map = _index_midis(source_folder)
     if not source_map:
         print(f"No source MIDI files found in '{source_folder}'.")
-        return rows_means, rows_mae
+        return rows_means, rows_mae, rows_mrae
     # Aggregate ground truth metrics
     source_metrics = []
     for _, source_fp in tqdm(sorted(source_map.items())):
@@ -970,7 +988,7 @@ def compute_setup_results(
     target_map = _index_midis(target_folder)
     if not target_map:
         print(f"No real MIDI files found in '{target_folder}'.")
-        return rows_means, rows_mae
+        return rows_means, rows_mae, rows_mrae
 
     # Aggregate ground truth metrics
     target_metrics = []
@@ -1020,8 +1038,9 @@ def compute_setup_results(
         # MAE row from cached per-pair metrics (no recomputation)
         pair_records = results.get("__pairs", [])
         rows_mae.append(mae_row_from_pairs(instance_folder, pair_records))
+        rows_mrae.append(mrae_row_from_pairs(instance_folder, pair_records))
 
-    return rows_means, rows_mae
+    return rows_means, rows_mae, rows_mrae
 
 
 # ---------- REPLACEMENT FOR compute_and_save_html_results_by_model ----------
@@ -1039,6 +1058,7 @@ def compute_and_save_html_results_by_setup(
     metric_cols = ["CHE", "CC", "CTD", "CTnCTR", "PCS", "MCTD", "HRHE_i", "HRC_i", "CBS"]
     df_means_full = pd.DataFrame(columns=["Instance"] + metric_cols)
     df_mae_full = pd.DataFrame(columns=["Instance"] + metric_cols)
+    df_mrae_full = pd.DataFrame(columns=["Instance"] + metric_cols)
 
     for setup_name in sorted(os.listdir(root_folder)):
         setup_path = os.path.join(root_folder, setup_name)
@@ -1046,7 +1066,7 @@ def compute_and_save_html_results_by_setup(
             continue
 
         print(f"Processing setup: {setup_name}")
-        rows_means, rows_mae = compute_setup_results(
+        rows_means, rows_mae, rows_mrae = compute_setup_results(
             setup_path=setup_path,
             source_folder=source_folder,
             target_folder=target_folder,
@@ -1054,7 +1074,7 @@ def compute_and_save_html_results_by_setup(
             melody_track_index=melody_track_index,
             grouping_threshold=grouping_threshold
         )
-        if not rows_means and not rows_mae:
+        if not rows_means and not rows_mae and not rows_mrae:
             print(f"  No valid data for setup {setup_name}")
             continue
 
@@ -1062,6 +1082,8 @@ def compute_and_save_html_results_by_setup(
         df_means_full = pd.concat([df_means_full, df_means], ignore_index=True)
         df_mae = pd.DataFrame(rows_mae)
         df_mae_full = pd.concat([df_mae_full, df_mae], ignore_index=True)
+        df_mrae = pd.DataFrame(rows_mrae)
+        df_mrae_full = pd.concat([df_mrae_full, df_mrae], ignore_index=True)
 
         # Table 1: Means (Ground Truth on first row; highlight closest-to-GT)
         means_html = ""
@@ -1085,7 +1107,18 @@ def compute_and_save_html_results_by_setup(
             )
             mae_html = styled_mae.to_html()
 
-        html_blocks.append(means_html + mae_html)
+        # Table 3: MRAE (instances only; highlight lowest)
+        mrae_html = ""
+        if rows_mrae:
+            df_mrae = pd.DataFrame(rows_mrae)
+            present_cols_mrae = [c for c in metric_cols if c in df_mrae.columns]
+            styled_mrae = df_mrae.style.apply(highlight_lowest, subset=present_cols_mrae)
+            styled_mrae = styled_mrae.set_caption(
+                f"<h3>Setup: {setup_name} — Mean Relative Absolute Error</h3>"
+            )
+            mrae_html = styled_mrae.to_html()
+
+        html_blocks.append(means_html + mae_html + mrae_html)
 
     legend_html = """
     <div style="margin-bottom: 30px;">
@@ -1101,7 +1134,7 @@ def compute_and_save_html_results_by_setup(
          <li><strong>HRC_i</strong>: Harmonic Rhythm Coverage</li>
          <li><strong>CBS</strong>: Chord Beat Strength</li>
       </ul>
-      <p><em>MAE table shows mean absolute difference to ground truth across matched files. Lower is better.</em></p>
+      <p><em>M(R)AE table shows mean (relative) absolute difference to target across matched files. Lower is better.</em></p>
     </div>
     """
 
@@ -1128,6 +1161,7 @@ def compute_and_save_html_results_by_setup(
     print(f"HTML results saved to {output_html}")
     df_means_full.to_csv(output_html.replace('.html', '_means.csv'), index=False)
     print(f"Means CSV results saved to {output_html.replace('.html', '_means.csv')}")
+    # MAE
     metric_cols = df_mae_full.columns.drop('Instance')
     df_mae_full['avg'] = df_mae_full[metric_cols].mean(axis=1)
     df_mae_full.to_csv(output_html.replace('.html', '_mae.csv'), index=False)
@@ -1135,6 +1169,13 @@ def compute_and_save_html_results_by_setup(
     with open(output_html.replace('.html', '_mae.tex'), "w") as f:
         f.write(latex_table)
     print(f"MAE CSV results saved to {output_html.replace('.html', '_mae.csv')}")
+    # MRAE
+    df_mrae_full['avg'] = df_mrae_full[metric_cols].mean(axis=1)
+    df_mrae_full.to_csv(output_html.replace('.html', '_mrae.csv'), index=False)
+    latex_table = df_mae_full.to_latex(float_format="%.4f")
+    with open(output_html.replace('.html', '_mrae.tex'), "w") as f:
+        f.write(latex_table)
+    print(f"MRAE CSV results saved to {output_html.replace('.html', '_mrae.csv')}")
 
 if __name__ == "__main__":
     source_path = "./MIDIs/jazz2nott/real"          # folder with the source/melody MIDIs

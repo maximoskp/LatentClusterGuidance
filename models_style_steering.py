@@ -104,6 +104,7 @@ class SELaCModel(nn.Module):
             get_layers_output=False,
             style_banks=None,
             bank_key=None,
+            num_neighbors=1,
             steering_strengths=None,
             steer_mask=None
         ):
@@ -178,9 +179,14 @@ class SELaCModel(nn.Module):
                     bank_norm = F.normalize(bank, p=2, dim=-1)
                     # Similarity (B, G, N): each position searches its matching position.
                     similarities = torch.einsum("bgd,ngd->bgn", q_norm, bank_norm)
-                    nearest_idx = similarities.argmax(dim=-1)  # (B, G)
-                    pos = torch.arange(self.grid_length, device=device)[None, :]
-                    targets = bank[nearest_idx, pos]           # (B, G, D)
+                    # nearest_idx = similarities.argmax(dim=-1)  # (B, G)
+                    # pos = torch.arange(self.grid_length, device=device)[None, :]
+                    # targets = bank[nearest_idx, pos]           # (B, G, D)
+                    k = min(num_neighbors, similarities.shape[-1])
+                    top_idx = similarities.topk(k, dim=-1).indices  # (B, G, k)
+                    pos = torch.arange(self.grid_length, device=device)[None, :, None]
+                    neighbors = bank[top_idx, pos]                  # (B, G, k, D)
+                    targets = neighbors.mean(dim=2)                 # (B, G, D)
                 elif bank.ndim == 2:
                     # Position-independent retrieval: each query state searches all rows.
                     if bank.shape[-1] != self.d_model or bank.shape[0] < 1:
@@ -192,8 +198,12 @@ class SELaCModel(nn.Module):
                     q_norm = F.normalize(q_flat, p=2, dim=-1)
                     bank_norm = F.normalize(bank, p=2, dim=-1)
                     similarities = q_norm @ bank_norm.transpose(0, 1)  # (B*G, N_ref)
-                    nearest_idx = similarities.argmax(dim=-1)
-                    targets = bank[nearest_idx].reshape(B, self.grid_length, self.d_model)
+                    # nearest_idx = similarities.argmax(dim=-1)
+                    # targets = bank[nearest_idx].reshape(B, self.grid_length, self.d_model)
+                    k = min(num_neighbors, similarities.shape[-1])
+                    top_idx = similarities.topk(k, dim=-1).indices  # (B*G, k)
+                    neighbors = bank[top_idx].reshape(B, self.grid_length, k, self.d_model) # (B, G, k, D)
+                    targets = neighbors.mean(dim=2)                 # (B, G, D)
                 elif bank.ndim == 1:
                     # Global-vector steering: same target vector for every position.
                     if bank.shape[0] != self.d_model:
