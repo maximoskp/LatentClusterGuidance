@@ -913,7 +913,7 @@ def mrae_row_from_pairs(instance_name, pair_records):
     return row
 
 def highlight_lowest(series):
-    metric_columns = ["CHE", "CC", "CTD", "CTnCTR", "PCS", "MCTD", "HRHE_i", "HRC_i", "CBS"]
+    metric_columns = ["CHE", "CC", "CTD", "CTnCTR", "PCS", "MCTD", "HRHE_i", "HRC_i", "CBS", "avg"]
     if series.name not in metric_columns or series.dropna().empty:
         return ['' for _ in series]
     min_val = series.min(skipna=True)
@@ -921,7 +921,7 @@ def highlight_lowest(series):
 
 
 
-def highlight_closest(series):
+def highlight_closest(series, gt_row=0):
     """
     For a metric column (e.g. "CHE_mean"), use the first row as the ground truth
     value and mark (with a lightgreen background) the cell(s) in the generated rows
@@ -930,9 +930,9 @@ def highlight_closest(series):
     metric_columns = ["CHE", "CC", "CTD", "CTnCTR", "PCS", "MCTD", "HRHE_i", "HRC_i", "CBS"]
     if series.name not in metric_columns:
         return ['' for _ in series]
-    ground_truth = series.iloc[0]
+    ground_truth = series.iloc[gt_row]
     # Compute differences for generated rows only (rows with index >= 1)
-    diffs = series.iloc[1:].apply(lambda x: abs(x - ground_truth))
+    diffs = series.iloc[(gt_row+1):].apply(lambda x: abs(x - ground_truth))
     if diffs.empty:
         return ['' for _ in series]
     min_diff = diffs.min()
@@ -1090,9 +1090,9 @@ def compute_and_save_html_results_by_setup(
         if rows_means:
             df_means = pd.DataFrame(rows_means)
             present_cols_means = [c for c in metric_cols if c in df_means.columns]
-            styled_means = df_means.style.apply(highlight_closest, subset=present_cols_means)
+            styled_means = df_means.style.apply(highlight_closest, subset=present_cols_means, gt_row=1,)
             styled_means = styled_means.set_caption(
-                f"<h3>Setup: {setup_name} — Mean Absolute Error</h3>"
+                f"<h3>Setup: {setup_name} — Mean Feature Values</h3>"
             )
             means_html = styled_means.to_html()
 
@@ -1100,6 +1100,7 @@ def compute_and_save_html_results_by_setup(
         mae_html = ""
         if rows_mae:
             df_mae = pd.DataFrame(rows_mae)
+            df_mae['avg'] = df_mae[metric_cols].mean(axis=1)
             present_cols_mae = [c for c in metric_cols if c in df_mae.columns]
             styled_mae = df_mae.style.apply(highlight_lowest, subset=present_cols_mae)
             styled_mae = styled_mae.set_caption(
@@ -1111,6 +1112,7 @@ def compute_and_save_html_results_by_setup(
         mrae_html = ""
         if rows_mrae:
             df_mrae = pd.DataFrame(rows_mrae)
+            df_mrae['avg'] = df_mrae[metric_cols].mean(axis=1)
             present_cols_mrae = [c for c in metric_cols if c in df_mrae.columns]
             styled_mrae = df_mrae.style.apply(highlight_lowest, subset=present_cols_mrae)
             styled_mrae = styled_mrae.set_caption(
@@ -1163,7 +1165,7 @@ def compute_and_save_html_results_by_setup(
     print(f"Means CSV results saved to {output_html.replace('.html', '_means.csv')}")
     # MAE
     metric_cols = df_mae_full.columns.drop('Instance')
-    df_mae_full['avg'] = df_mae_full[metric_cols].mean(axis=1)
+    # df_mae_full['avg'] = df_mae_full[metric_cols].mean(axis=1)
     df_mae_full.to_csv(output_html.replace('.html', '_mae.csv'), index=False)
     latex_table = df_mae_full.to_latex(float_format="%.4f")
     with open(output_html.replace('.html', '_mae.tex'), "w") as f:

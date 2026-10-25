@@ -99,6 +99,7 @@ results = tokenwise_knn_accuracy(
     reference_valid=None,
     query_valid=None,
     metric="cosine",
+    use_smote=True
 )
 
 rows = []
@@ -189,6 +190,7 @@ results_flat = statewise_knn_accuracy(
     query_piece_labels=query_piece_labels,
     k=3,
     metric="cosine",
+    use_smote=True
 )
 
 rows = []

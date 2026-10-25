@@ -179,14 +179,20 @@ class SELaCModel(nn.Module):
                     bank_norm = F.normalize(bank, p=2, dim=-1)
                     # Similarity (B, G, N): each position searches its matching position.
                     similarities = torch.einsum("bgd,ngd->bgn", q_norm, bank_norm)
+                    # # NEAREST ONLY ===============================================================
                     # nearest_idx = similarities.argmax(dim=-1)  # (B, G)
                     # pos = torch.arange(self.grid_length, device=device)[None, :]
                     # targets = bank[nearest_idx, pos]           # (B, G, D)
                     k = min(num_neighbors, similarities.shape[-1])
-                    top_idx = similarities.topk(k, dim=-1).indices  # (B, G, k)
-                    pos = torch.arange(self.grid_length, device=device)[None, :, None]
-                    neighbors = bank[top_idx, pos]                  # (B, G, k, D)
-                    targets = neighbors.mean(dim=2)                 # (B, G, D)
+                    top_idx = similarities.topk(k, dim=-1, sorted=True).indices  # (B, G, k)
+                    # # AVG OF ALL NEAREST ========================================================
+                    # pos = torch.arange(self.grid_length, device=device)[None, :, None]
+                    # neighbors = bank[top_idx, pos]                  # (B, G, k, D)
+                    # targets = neighbors.mean(dim=2)                 # (B, G, D)
+                    # k-th NEAREST ONLY ==========================================================
+                    kth_idx = top_idx[:,:, -1].squeeze()  # (B, G)
+                    pos = torch.arange(self.grid_length, device=device)[None, :]
+                    targets = bank[kth_idx, pos]           # (B, G, D)
                 elif bank.ndim == 2:
                     # Position-independent retrieval: each query state searches all rows.
                     if bank.shape[-1] != self.d_model or bank.shape[0] < 1:
@@ -198,12 +204,17 @@ class SELaCModel(nn.Module):
                     q_norm = F.normalize(q_flat, p=2, dim=-1)
                     bank_norm = F.normalize(bank, p=2, dim=-1)
                     similarities = q_norm @ bank_norm.transpose(0, 1)  # (B*G, N_ref)
+                    # # NEAREST ONLY ===============================================================
                     # nearest_idx = similarities.argmax(dim=-1)
                     # targets = bank[nearest_idx].reshape(B, self.grid_length, self.d_model)
                     k = min(num_neighbors, similarities.shape[-1])
-                    top_idx = similarities.topk(k, dim=-1).indices  # (B*G, k)
-                    neighbors = bank[top_idx].reshape(B, self.grid_length, k, self.d_model) # (B, G, k, D)
-                    targets = neighbors.mean(dim=2)                 # (B, G, D)
+                    top_idx = similarities.topk(k, dim=-1, sorted=True).indices  # (B*G, k)
+                    # # AVG OF ALL NEAREST ========================================================
+                    # neighbors = bank[top_idx].reshape(B, self.grid_length, k, self.d_model) # (B, G, k, D)
+                    # targets = neighbors.mean(dim=2)                 # (B, G, D)
+                    # k-th NEAREST ONLY ==========================================================
+                    kth_idx = top_idx[:, -1].squeeze()  # (B, G)
+                    targets = bank[kth_idx].reshape(B, self.grid_length, self.d_model)
                 elif bank.ndim == 1:
                     # Global-vector steering: same target vector for every position.
                     if bank.shape[0] != self.d_model:
@@ -223,8 +234,8 @@ class SELaCModel(nn.Module):
                     else (0.0 if steering_strengths is None else steering_strengths)
                 )
                 strength = float(strength)
-                if not 0.0 <= strength <= 1.0:
-                    raise ValueError("Steering strengths must be in [0, 1].")
+                # if not 0.0 <= strength <= 1.0:
+                #     raise ValueError("Steering strengths must be in [0, 1].")
 
                 delta = targets - harmony_hidden
                 if steer_mask is not None:
@@ -539,6 +550,117 @@ def collect_harmony_layer_states(
 # end collect_harmony_layer_states
 
 @torch.no_grad()
+def smote_tokenwise_reference_bank(
+    reference_states,
+    reference_labels,
+    reference_valid=None,
+    k_neighbors=5,
+    generator=None,
+):
+    """Balance a two-class reference bank by interpolating minority pieces."""
+    labels = torch.as_tensor(reference_labels, dtype=torch.long).cpu()
+    if labels.ndim != 1:
+        raise ValueError("reference_labels must be 1-D")
+    if k_neighbors < 1:
+        raise ValueError("k_neighbors must be >= 1")
+    if not reference_states:
+        raise ValueError("reference_states must not be empty")
+
+    first_states = next(iter(reference_states.values()))
+    if first_states.ndim != 3:
+        raise ValueError("State tensors must have shape (N, G, D)")
+
+    n_reference, grid, _ = first_states.shape
+    for layer, states in reference_states.items():
+        if states.ndim != 3 or states.shape[:2] != (n_reference, grid):
+            raise ValueError(
+                f"Layer {layer} must have shape (N_reference, G, D)"
+            )
+        if not states.is_floating_point():
+            raise ValueError(f"Layer {layer} states must be floating point")
+
+    if len(labels) != n_reference:
+        raise ValueError("reference_labels length does not match reference states")
+
+    valid = None
+    if reference_valid is not None:
+        valid = torch.as_tensor(reference_valid, dtype=torch.bool).cpu()
+        if valid.shape != (n_reference, grid):
+            raise ValueError(
+                f"reference_valid must have shape {(n_reference, grid)}"
+            )
+
+    classes, counts = torch.unique(labels, return_counts=True)
+    if len(classes) != 2:
+        raise ValueError("SMOTE requires exactly two reference classes")
+
+    if counts[0] == counts[1]:
+        return dict(reference_states), labels, valid
+
+    minority_class = classes[counts.argmin()]
+    minority_indices = torch.where(labels == minority_class)[0]
+    n_to_add = int(counts.max() - counts.min())
+
+    if len(minority_indices) < 2:
+        raise ValueError(
+            "SMOTE needs at least two minority-class references; "
+            "with only one, use a different balancing strategy"
+        )
+
+    # Use the first layer to select neighbors. Ignore invalid positions when
+    # a validity mask is supplied.
+    features = first_states.detach().float().cpu()
+    if valid is not None:
+        features = features * valid.unsqueeze(-1)
+    features = features.reshape(n_reference, -1)[minority_indices]
+
+    distances = torch.cdist(features, features)
+    distances.fill_diagonal_(float("inf"))
+    n_neighbors = min(k_neighbors, len(minority_indices) - 1)
+    nearest = distances.topk(n_neighbors, largest=False).indices
+
+    generated = {layer: [] for layer in reference_states}
+    generated_valid = []
+
+    for _ in range(n_to_add):
+        source_local = int(torch.randint(
+            len(minority_indices), (), generator=generator
+        ))
+        neighbor_local = int(torch.randint(
+            n_neighbors, (), generator=generator
+        ))
+        source_idx = int(minority_indices[source_local])
+        neighbor_idx = int(minority_indices[nearest[source_local, neighbor_local]])
+        alpha = torch.rand((), generator=generator).item()
+
+        for layer, states in reference_states.items():
+            source = states[source_idx]
+            neighbor = states[neighbor_idx].to(source.device)
+            generated[layer].append(
+                (source + alpha * (neighbor - source)).unsqueeze(0)
+            )
+
+        if valid is not None:
+            generated_valid.append(valid[source_idx] & valid[neighbor_idx])
+
+    augmented_states = {
+        layer: torch.cat([states, *generated[layer]], dim=0)
+        for layer, states in reference_states.items()
+    }
+    augmented_labels = torch.cat([
+        labels,
+        minority_class.expand(n_to_add),
+    ])
+    augmented_valid = (
+        torch.cat([valid, *generated_valid], dim=0)
+        if valid is not None
+        else None
+    )
+
+    return augmented_states, augmented_labels, augmented_valid
+# end smote_tokenwise_reference_bank
+
+@torch.no_grad()
 def tokenwise_knn_accuracy(
     query_states,
     reference_states,
@@ -548,6 +670,7 @@ def tokenwise_knn_accuracy(
     query_valid=None,
     reference_valid=None,
     metric="cosine",
+    use_smote=True
 ):
     """Evaluate per-token style classification at matching grid positions.
 
@@ -582,6 +705,14 @@ def tokenwise_knn_accuracy(
 
     if metric not in {"cosine", "euclidean"}:
         raise ValueError("metric must be 'cosine' or 'euclidean'")
+
+    if use_smote:
+        reference_states, reference_labels, reference_valid = smote_tokenwise_reference_bank(
+            reference_states,
+            reference_labels,
+            reference_valid=reference_valid,
+            generator=torch.Generator().manual_seed(42),
+        )
 
     # Use CPU tensors for evaluation.
     ref_labels = torch.as_tensor(reference_labels, dtype=torch.long).cpu()
@@ -736,6 +867,109 @@ def tokenwise_knn_accuracy(
 import torch
 import torch.nn.functional as F
 
+@torch.no_grad()
+def smote_statewise_reference_bank(
+    reference_states,
+    reference_state_labels,
+    k_neighbors=5,
+    metric="cosine",
+    generator=None,
+):
+    """Balance a two-class, multilayer state reference bank with SMOTE."""
+    labels = torch.as_tensor(
+        reference_state_labels, dtype=torch.long
+    ).cpu()
+
+    if labels.ndim != 1:
+        raise ValueError("reference_state_labels must be 1-D")
+    if k_neighbors < 1:
+        raise ValueError("k_neighbors must be >= 1")
+    if metric not in {"cosine", "euclidean"}:
+        raise ValueError("metric must be 'cosine' or 'euclidean'")
+    if not reference_states:
+        raise ValueError("reference_states must not be empty")
+
+    first_layer = next(iter(reference_states))
+    first_states = reference_states[first_layer]
+    if first_states.ndim != 2:
+        raise ValueError("State tensors must have shape (N_states, D)")
+
+    n_states = first_states.shape[0]
+    for layer, states in reference_states.items():
+        if states.ndim != 2 or states.shape[0] != n_states:
+            raise ValueError(
+                f"Layer {layer} must have shape (N_states, D)"
+            )
+        if not states.is_floating_point():
+            raise ValueError(f"Layer {layer} states must be floating point")
+
+    if len(labels) != n_states:
+        raise ValueError(
+            "reference_state_labels length does not match reference states"
+        )
+
+    classes, counts = torch.unique(labels, return_counts=True)
+    if len(classes) != 2:
+        raise ValueError("SMOTE requires exactly two reference classes")
+
+    if counts[0] == counts[1]:
+        return dict(reference_states), labels
+
+    minority_class = classes[counts.argmin()]
+    minority_indices = torch.where(labels == minority_class)[0]
+
+    if len(minority_indices) < 2:
+        raise ValueError(
+            "SMOTE needs at least two minority-class states; "
+            "with only one, use a different balancing strategy"
+        )
+
+    n_to_add = int(counts.max() - counts.min())
+
+    # Select neighbors from the first layer, using the same metric as k-NN.
+    features = first_states.detach().float().cpu()[minority_indices]
+    if metric == "cosine":
+        features = F.normalize(features, dim=-1)
+        distances = 1.0 - features @ features.T
+    else:
+        distances = torch.cdist(features, features, p=2)
+
+    distances.fill_diagonal_(float("inf"))
+    n_neighbors = min(k_neighbors, len(minority_indices) - 1)
+    nearest = distances.topk(n_neighbors, largest=False).indices
+
+    generated = {layer: [] for layer in reference_states}
+
+    for _ in range(n_to_add):
+        source_local = int(torch.randint(
+            len(minority_indices), (), generator=generator
+        ))
+        neighbor_local = int(torch.randint(
+            n_neighbors, (), generator=generator
+        ))
+
+        source_idx = int(minority_indices[source_local])
+        neighbor_idx = int(minority_indices[nearest[source_local, neighbor_local]])
+        alpha = torch.rand((), generator=generator).item()
+
+        for layer, states in reference_states.items():
+            source = states[source_idx]
+            neighbor = states[neighbor_idx].to(source.device)
+            generated[layer].append(
+                (source + alpha * (neighbor - source)).unsqueeze(0)
+            )
+
+    augmented_states = {
+        layer: torch.cat([states, *generated[layer]], dim=0)
+        for layer, states in reference_states.items()
+    }
+    augmented_labels = torch.cat([
+        labels,
+        minority_class.expand(n_to_add),
+    ])
+
+    return augmented_states, augmented_labels
+# end smote_statewise_reference_bank
 
 @torch.no_grad()
 def statewise_knn_accuracy(
@@ -748,6 +982,7 @@ def statewise_knn_accuracy(
     k=5,
     metric="cosine",
     chunk_size=2048,
+    use_smote=True
 ):
     """
     Position-independent k-NN classification of individual states,
@@ -780,6 +1015,16 @@ def statewise_knn_accuracy(
         raise ValueError("metric must be 'cosine' or 'euclidean'")
     if chunk_size < 1:
         raise ValueError("chunk_size must be >= 1")
+
+    reference_states, reference_state_labels = (
+        smote_statewise_reference_bank(
+            reference_states,
+            reference_state_labels,
+            k_neighbors=5,
+            metric=metric,
+            generator=torch.Generator().manual_seed(42),
+        )
+    )
 
     q_labels = torch.as_tensor(
         query_state_labels, dtype=torch.long

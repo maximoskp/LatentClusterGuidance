@@ -9,27 +9,35 @@
 scripts=(
     # "generate_nott2jazz.py -l 0 -s 0.5 -g 0"
     # "generate_nott2jazz.py -l 0 -s 1.0 -g 0"
+    "generate_nott2jazz.py -l 0 -s 2.0 -g 0"
     
     # "generate_nott2jazz.py -l 4 -s 0.5 -g 0"
     # "generate_nott2jazz.py -l 4 -s 1.0 -g 0"
+    "generate_nott2jazz.py -l 4 -s 2.0 -g 0"
 
     # "generate_nott2jazz.py -l 6 -s 0.5 -g 0"
     # "generate_nott2jazz.py -l 6 -s 1.0 -g 0"
+    "generate_nott2jazz.py -l 6 -s 2.0 -g 0"
 
     # "generate_nott2jazz.py -l -1 -s 0.5 -g 0"
     # "generate_nott2jazz.py -l -1 -s 1.0 -g 0"
+    "generate_nott2jazz.py -l -1 -s 2.0 -g 0"
 
-    "generate_jazz2nott.py -l 0 -s 0.5 -g 2"
-    "generate_jazz2nott.py -l 0 -s 1.0 -g 2"
+    # "generate_jazz2nott.py -l 0 -s 0.5 -g 2"
+    # "generate_jazz2nott.py -l 0 -s 1.0 -g 2"
+    "generate_jazz2nott.py -l 0 -s 2.0 -g 1"
     
-    "generate_jazz2nott.py -l 4 -s 0.5 -g 2"
-    "generate_jazz2nott.py -l 4 -s 1.0 -g 2"
+    # "generate_jazz2nott.py -l 4 -s 0.5 -g 2"
+    # "generate_jazz2nott.py -l 4 -s 1.0 -g 2"
+    "generate_jazz2nott.py -l 4 -s 2.0 -g 1"
 
-    "generate_jazz2nott.py -l 6 -s 0.5 -g 2"
-    "generate_jazz2nott.py -l 6 -s 1.0 -g 2"
+    # "generate_jazz2nott.py -l 6 -s 0.5 -g 2"
+    # "generate_jazz2nott.py -l 6 -s 1.0 -g 2"
+    "generate_jazz2nott.py -l 6 -s 2.0 -g 1"
 
-    "generate_jazz2nott.py -l -1 -s 0.5 -g 2"
-    "generate_jazz2nott.py -l -1 -s 1.0 -g 2"
+    # "generate_jazz2nott.py -l -1 -s 0.5 -g 2"
+    # "generate_jazz2nott.py -l -1 -s 1.0 -g 2"
+    "generate_jazz2nott.py -l -1 -s 2.0 -g 1"
 )
 
 # Name of the conda environment
