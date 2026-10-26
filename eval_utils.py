@@ -358,7 +358,7 @@ def single_layer_latent_influence(
                 valid_positions = harmony_input[ harmony_input != mask_token_id ]
 
                 with torch.no_grad():
-                    logits, steered_states, pre_out = model(
+                    _, states_output = model(
                         melodies.to(device),
                         harmony_tokens=harmony_input.to(device),
                         style_banks=target_train_states,
@@ -368,6 +368,8 @@ def single_layer_latent_influence(
                         steer_mask=None,# valid_positions.to(device),
                         get_layers_output=True,
                     )
+                    steered_states = states_output['layers_output']
+                    pre_out = states_output['pre_intervention_output']
                     for layer_idx, state in steered_states.items():
                         steered_states_all[layer_idx].append(state.detach().cpu())
                     for layer_idx, state in pre_out.items():
@@ -450,7 +452,7 @@ def all_layers_latent_influence(
             valid_positions = harmony_input[ harmony_input != mask_token_id ]
 
             with torch.no_grad():
-                logits, steered_states, pre_out = model(
+                _, states_output = model(
                     melodies.to(device),
                     harmony_tokens=harmony_input.to(device),
                     style_banks=target_train_states,
@@ -460,6 +462,8 @@ def all_layers_latent_influence(
                     steer_mask=None,# valid_positions.to(device),
                     get_layers_output=True,
                 )
+                steered_states = states_output['layers_output']
+                pre_out = states_output['pre_intervention_output']
                 for layer_idx, state in steered_states.items():
                     steered_states_all[layer_idx].append(state.detach().cpu())
                 for layer_idx, state in pre_out.items():
@@ -539,3 +543,59 @@ def make_imshow_of_all_layers_results(
     plt.colorbar(image, ax=ax)
     plt.savefig(fig_path, dpi=300)
 # end make_imshow_of_all_layers_results
+
+
+def layer_latent_dists(
+    model,
+    device,
+    valLoader,
+    target_train_states,
+    bank_key,
+    num_neighbors,
+    mask_token_id,
+    bar_token_id,
+    strength
+):
+    strengths = {
+        layer: strength
+        for layer in range(len(model.encoder_layers))
+    }
+    results_inidividual_layer = {}
+    model.eval()
+
+    dists = {
+        layer: 0
+        for layer in range(len(model.encoder_layers))
+    }
+
+    # nott melodies to jazz harmony
+    for batch in valLoader:
+        melodies = batch['pianoroll']
+        harmony_ids = batch['harmony_ids']
+        harmony_input, _ = full_to_partial_masking(
+            harmony_ids,
+            mask_token_id,
+            0,
+            bar_token_id=bar_token_id
+        )
+        valid_positions = harmony_input[ harmony_input != mask_token_id ]
+
+        with torch.no_grad():
+            _, states_output = model(
+                melodies.to(device),
+                harmony_tokens=harmony_input.to(device),
+                style_banks=target_train_states,
+                bank_key=bank_key,
+                num_neighbors=num_neighbors,
+                steering_strengths=strengths,
+                steer_mask=None,# valid_positions.to(device),
+                get_layers_output=True,
+            )
+            batch_dists = states_output['intervention_dists_per_layer']
+            for layer_idx, dist in batch_dists.items():
+                dists[layer_idx] += dist.detach().cpu()
+            # end for
+        # end with
+    # end batch
+    return dists
+# end single_layer_latent_dists

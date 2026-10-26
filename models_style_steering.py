@@ -155,6 +155,7 @@ class SELaCModel(nn.Module):
         layers_output = {} if get_layers_output else None
         has_banks = style_banks is not None and len(style_banks) > 0
         pre_intervention_output = {} if get_layers_output and has_banks else None
+        intervention_dists_per_layer = {} if get_layers_output and has_banks else None
         encoded = full_seq
         harmony_slice = slice(-self.grid_length, None)
 
@@ -253,17 +254,25 @@ class SELaCModel(nn.Module):
                 encoded = torch.cat(
                     [encoded[:, :self.grid_length, :], harmony_hidden_post], dim=1
                 )
+            # end if style_banks is not None and i in style_banks:
 
             if get_layers_output:
                 layers_output[i] = harmony_hidden_post
                 if has_banks:
                     pre_intervention_output[i] = harmony_hidden
+                    intervention_dists_per_layer[i] = torch.linalg.vector_norm(delta)
+        # end for i, layer in enumerate(self.encoder_layers):
 
         encoded = self.output_norm(encoded)
         harmony_output = self.output_head(encoded[:, harmony_slice, :])
-        if get_layers_output:
-            return harmony_output, layers_output, pre_intervention_output
-        return harmony_output, None, None
+        return harmony_output, {
+            'layers_output': layers_output,
+            'pre_intervention_output': pre_intervention_output,
+            'intervention_dists_per_layer': intervention_dists_per_layer
+        }
+        # if get_layers_output:
+        #     return harmony_output, layers_output, pre_intervention_output
+        # return harmony_output, None, None
     # end forward
 
     # optionally add helpers to extract attention maps across layers:

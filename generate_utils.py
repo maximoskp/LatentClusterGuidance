@@ -281,7 +281,7 @@ def nucleus_token_by_token_generate(
     
     while (visible_harmony == mask_token_id).any():
         with torch.no_grad():
-            logits, layers_output, pre_output = model(
+            logits, states_output = model(
                 melody_grid=melody_grid.to(model.device),
                 harmony_tokens=visible_harmony.to(model.device),
                 style_banks=style_banks,
@@ -349,8 +349,7 @@ def nucleus_token_by_token_generate(
     
     return {
         'harmony_ids': visible_harmony,
-        'layers_output': layers_output,
-        'pre_output': pre_output
+        'states_output': states_output
     }
 # end nucleus_token_by_token_generate
 
@@ -480,41 +479,41 @@ def generate_files_with_nucleus(
     }
 # end generate_files_with_nucleus
 
-def get_actisteer_guidance(
-        model,
-        bar_token_id,
-        mask_token_id,
-        source_melody,
-        source_harmony,
-        target_melody,
-        target_harmony
-    ):
-    # for source, we need to consider harmony fully masked, except from bar tokens
-    source_harmony_masks, _ = full_to_partial_masking(
-        source_harmony,
-        mask_token_id,
-        0,
-        bar_token_id=bar_token_id
-    )
-    # get the "natural" harmony embeddings for this melody - consider mask harmony tokens
-    _, source_melody_layers_output = model(
-        source_melody,
-        source_harmony_masks, 
-        get_layers_output=True
-    )
-    # for the target harmony, we need both melody and harmony token ids inside
-    _, target_melody_harmony_layers_output = model(
-        target_melody,
-        target_harmony,
-        get_layers_output=True
-    )
-    # get the difference as activation steering
-    h = {}
-    for k,v in target_melody_harmony_layers_output.items():
-        h[k] = v - source_melody_layers_output[k]
-        h[k] = h[k] / (h[k].norm() + 1e-6)
-    return h
-# end get_actisteer_guidance
+# def get_actisteer_guidance(
+#         model,
+#         bar_token_id,
+#         mask_token_id,
+#         source_melody,
+#         source_harmony,
+#         target_melody,
+#         target_harmony
+#     ):
+#     # for source, we need to consider harmony fully masked, except from bar tokens
+#     source_harmony_masks, _ = full_to_partial_masking(
+#         source_harmony,
+#         mask_token_id,
+#         0,
+#         bar_token_id=bar_token_id
+#     )
+#     # get the "natural" harmony embeddings for this melody - consider mask harmony tokens
+#     _, source_melody_layers_output = model(
+#         source_melody,
+#         source_harmony_masks, 
+#         get_layers_output=True
+#     )
+#     # for the target harmony, we need both melody and harmony token ids inside
+#     _, target_melody_harmony_layers_output = model(
+#         target_melody,
+#         target_harmony,
+#         get_layers_output=True
+#     )
+#     # get the difference as activation steering
+#     h = {}
+#     for k,v in target_melody_harmony_layers_output.items():
+#         h[k] = v - source_melody_layers_output[k]
+#         h[k] = h[k] / (h[k].norm() + 1e-6)
+#     return h
+# # end get_actisteer_guidance
 
 def load_SEASModel(
         tokenizer,

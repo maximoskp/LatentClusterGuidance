@@ -613,7 +613,7 @@ def train_with_curriculum(
                     )
                     num_visible = -1
                 # Forward pass
-                logits = model(
+                logits, _ = model(
                     melody_grid.to(device),
                     harmony_input.to(device),
                     None,

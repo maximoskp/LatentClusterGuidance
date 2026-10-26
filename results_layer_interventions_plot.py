@@ -98,12 +98,12 @@ all_layer_results = {
     'jazz2nott': {}
 }
 
-for bank_key in ['position_bank', 'flatten_bank']: #['position_bank', 'flatten_bank', 'global_vector']:
+for bank_key in ['position_bank', 'flatten_bank', 'global_vector']:
     individual_layer_results['nott2jazz'][bank_key] = {}
     individual_layer_results['jazz2nott'][bank_key] = {}
     all_layer_results['nott2jazz'][bank_key] = {}
     all_layer_results['jazz2nott'][bank_key] = {}
-    for neighbors_number in [5, 10, 20] if bank_key != 'global_vector' else [1]:
+    for neighbors_number in [1, 5, 10, 20] if bank_key != 'global_vector' else [1]:
         print('neighbors_number: ', neighbors_number)
         # individual
         individual_layer_results['nott2jazz'][bank_key][neighbors_number] = single_layer_latent_influence(
